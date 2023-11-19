@@ -47,7 +47,15 @@ public class Elevator {
         this.elevatorNumber = elevatorNumber;
         this.maxWeightCapacity = maxWeightCapacity;
         this.serviceFloors = new HashSet<>();
-        // Initialize other properties as needed
+
+        currentFloor = 0;
+        direction = Direction.IDLE;
+        doorStatus = DoorStatus.CLOSED;
+        weight = 0;
+        speed = 0;
+        targetFloor = 0;
+        isMoving = false;
+        isDoorOpen = false;
     }
 
     /**

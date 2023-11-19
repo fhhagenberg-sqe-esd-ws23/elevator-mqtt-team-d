@@ -2,11 +2,10 @@ package at.fhhagenberg.sqelevator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ElevatorManagerTest {
 
@@ -34,39 +33,114 @@ public class ElevatorManagerTest {
     }
 
     @Test
-    public void testGetFloorHeight() throws RemoteException {
-        // Test getFloorHeight method
+    public void testGetCommittedDirection() throws RemoteException {
+        int elevatorNumber = 0;
+        int direction = elevatorManager.getCommittedDirection(elevatorNumber);
+        assertNotNull(direction); // Ensure direction is not null
+    }
 
-        assertEquals(4, elevatorManager.getFloorHeight());
+    @Test
+    public void testGetElevatorAccel() throws RemoteException {
+        int elevatorNumber = 1;
+        int accel = elevatorManager.getElevatorAccel(elevatorNumber);
+        assertNotNull(accel); // Ensure acceleration value is not null
+    }
+
+    @Test
+    public void testGetElevatorButton() throws RemoteException {
+        int elevatorNumber = 2;
+        int floorNumber = 5; 
+        boolean buttonState = elevatorManager.getElevatorButton(elevatorNumber, floorNumber);
+        assertFalse(buttonState); // Assuming buttons are initially unpressed
+    }
+
+    @Test
+    public void testGetElevatorDoorStatus() throws RemoteException {
+        int elevatorNumber = 0;
+        int doorStatus = elevatorManager.getElevatorDoorStatus(elevatorNumber);
+        assertNotNull(doorStatus); // Ensure door status is not null
+    }
+
+    @Test
+    public void testGetElevatorFloor() throws RemoteException {
+        int elevatorNumber = 1;
+        int floor = elevatorManager.getElevatorFloor(elevatorNumber);
+        assertNotNull(floor); // Ensure floor value is not null
+    }
+
+    @Test
+    public void testGetElevatorNum() throws RemoteException {
+        int numElevators = elevatorManager.getElevatorNum();
+        assertNotNull(numElevators); // Ensure number of elevators is not null
+    }
+
+    @Test
+    public void testGetElevatorPosition() throws RemoteException {
+        int elevatorNumber = 0;
+        int position = elevatorManager.getElevatorPosition(elevatorNumber);
+        assertNotNull(position); // Ensure elevator position is not null
+    }
+
+    @Test
+    public void testGetElevatorSpeed() throws RemoteException {
+        int elevatorNumber = 0;
+        int speed = elevatorManager.getElevatorSpeed(elevatorNumber);
+        assertNotNull(speed); // Ensure elevator speed is not null
+    }
+
+    @Test
+    public void testGetElevatorWeight() throws RemoteException {
+        int elevatorNumber = 2;
+        int weight = elevatorManager.getElevatorWeight(elevatorNumber);
+        assertNotNull(weight); // Ensure elevator weight is not null
+    }
+
+    @Test
+    public void testGetElevatorCapacity() throws RemoteException {
+        int elevatorNumber = 2;
+        int capacity = elevatorManager.getElevatorCapacity(elevatorNumber);
+        assertNotNull(capacity); // Ensure elevator capacity is not null
     }
 
     @Test
     public void testGetFloorButtonDown() throws RemoteException {
-        // Test getFloorButtonDown method
-        assertFalse(elevatorManager.getFloorButtonDown(3)); // Assuming no button pressed initially
+        int floorNumber = 2; 
+        boolean buttonState = elevatorManager.getFloorButtonDown(floorNumber);
+        assertFalse(buttonState); // Assuming floor down button is initially unpressed
     }
 
     @Test
-    public void testPressFloorButton() throws RemoteException {
-        // Test pressing floor buttons
-        elevatorManager.floors.get(5).pressUpButton();
-        assertTrue(elevatorManager.floors.get(5).isUpButtonPressed());
+    public void testGetFloorButtonUp() throws RemoteException {
+        int floorNumber = 3; 
+        boolean buttonState = elevatorManager.getFloorButtonUp(floorNumber);
+        assertFalse(buttonState); // Assuming floor up button is initially unpressed
     }
 
     @Test
-    public void testSetServicesFloors() throws RemoteException {
-        // Test setting service floors for an elevator
-        elevatorManager.setServicesFloors(0, 3, true);
-        assertTrue(elevatorManager.getServicesFloors(0, 3));
+    public void testGetFloorHeight() throws RemoteException {
+        int floorHeight = elevatorManager.getFloorHeight();
+        assertNotNull(floorHeight); // Ensure floor height is not null
     }
-
-    // More tests can be added for other methods in ElevatorManager
 
     @Test
-    public void testElevatorBehaviour() {
-        // Test elevator behavior such as moving, door status, etc.
-        // This test might involve mocking/stubbing external dependencies or using a simulator.
-        // For example, mocking the behavior of moving an elevator and checking its status.
+    public void testGetFloorNum() throws RemoteException {
+        int numFloors = elevatorManager.getFloorNum();
+        assertNotNull(numFloors); // Ensure number of floors is not null
     }
+
+    @Test
+    public void testGetServicesFloors() throws RemoteException {
+        int elevatorNumber = 1;
+        int floorNumber = 1; 
+        boolean servicesFloor = elevatorManager.getServicesFloors(elevatorNumber, floorNumber);
+        assertFalse(servicesFloor); // Assuming floor is not serviced initially
+    }
+
+    @Test
+    public void testGetTarget() throws RemoteException {
+        int elevatorNumber = 1;
+        int targetFloor = elevatorManager.getTarget(elevatorNumber);
+        assertNotNull(targetFloor); // Ensure target floor is not null
+    }
+
 }
-

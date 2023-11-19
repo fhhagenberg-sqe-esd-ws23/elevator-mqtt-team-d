@@ -11,7 +11,7 @@ public class ElevatorManager  implements IElevator{
     // Method to populate the data model from the IElevator API
     List<Elevator> elevators;
     List<Floor> floors;
-    private int floorHeight = 5;
+    private int floorHeight;
 
     /**
      * Constructor to initialize an Elevator object.
