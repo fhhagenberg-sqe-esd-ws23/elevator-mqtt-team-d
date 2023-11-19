@@ -42,12 +42,12 @@ public class ElevatorManager  implements IElevator{
 
     @Override
     public int getCommittedDirection(int elevatorNumber) throws RemoteException {
-        return elevators.get(elevatorNumber).direction.ordinal();
+        return elevators.get(elevatorNumber).getDirection().ordinal();
     }
 
     @Override
     public int getElevatorAccel(int elevatorNumber) throws RemoteException {
-        return elevators.get(elevatorNumber).speed;
+        return elevators.get(elevatorNumber).getSpeed();
     }
 
     @Override
@@ -57,7 +57,7 @@ public class ElevatorManager  implements IElevator{
 
     @Override
     public int getElevatorDoorStatus(int elevatorNumber) throws RemoteException {
-        return elevators.get(elevatorNumber).doorStatus.ordinal();
+        return elevators.get(elevatorNumber).getDoorStatus().ordinal();
     }
 
     @Override
@@ -77,17 +77,17 @@ public class ElevatorManager  implements IElevator{
 
     @Override
     public int getElevatorSpeed(int elevatorNumber) throws RemoteException {
-        return elevators.get(elevatorNumber).speed;
+        return elevators.get(elevatorNumber).getSpeed();
     }
 
     @Override
     public int getElevatorWeight(int elevatorNumber) throws RemoteException {
-        return elevators.get(elevatorNumber).weight;
+        return elevators.get(elevatorNumber).getWeight();
     }
 
     @Override
     public int getElevatorCapacity(int elevatorNumber) throws RemoteException {
-        return elevators.get(elevatorNumber).maxWeightCapacity;
+        return elevators.get(elevatorNumber).getMaxWeightCapacity();
     }
 
     @Override
@@ -112,17 +112,17 @@ public class ElevatorManager  implements IElevator{
 
     @Override
     public boolean getServicesFloors(int elevatorNumber, int floor) throws RemoteException {
-        return this.elevators.get(elevatorNumber).serviceFloors.contains(floor);
+        return this.elevators.get(elevatorNumber).getServiceFloors().contains(floor);
     }
 
     @Override
     public int getTarget(int elevatorNumber) throws RemoteException {
-        return  this.elevators.get(elevatorNumber).targetFloor;
+        return  this.elevators.get(elevatorNumber).getTargetFloor();
     }
 
     @Override
     public void setCommittedDirection(int elevatorNumber, int direction) throws RemoteException {
-        this.elevators.get(elevatorNumber).direction = Elevator.Direction.values()[direction];
+        this.elevators.get(elevatorNumber).setDirection(Elevator.Direction.values()[direction]);
     }
 
     @Override
