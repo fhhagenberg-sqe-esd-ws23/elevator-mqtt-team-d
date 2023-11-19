@@ -1,12 +1,33 @@
 package at.fhhagenberg.sqelevator;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 // Class to manage elevators and populate the data model
 public class ElevatorManager  implements IElevator{
     // Method to populate the data model from the IElevator API
     List<Elevator> elevators;
+    List<Floor> floors;
+    private int floorHeight = 5;
+
+    /**
+     * Constructor to initialize an Elevator object.
+     *
+     * @param elevatorNumber    The identifier for the elevator.
+     * @param maxWeightCapacity The maximum weight capacity of the elevator.
+     */
+//    public ElevatorManager(int floors, int floorHeight) {
+//
+//        for (int i = 0; i < floors; i++)
+//        {
+//            this.floors.add(new Floor(i));
+//        }
+//        this.floorHeight = floorHeight;
+//        // Initialize other properties as needed
+//    }
 
     public void addElevators(int num ){
         for(int i = 0; i < num; i++){
@@ -14,15 +35,19 @@ public class ElevatorManager  implements IElevator{
         }
     }
 
+    public void setFloorHeight(int newHeight)
+    {
+        this.floorHeight = newHeight;
+    }
 
     @Override
     public int getCommittedDirection(int elevatorNumber) throws RemoteException {
-        return 0;
+        return elevators.get(elevatorNumber).direction.ordinal();
     }
 
     @Override
     public int getElevatorAccel(int elevatorNumber) throws RemoteException {
-        return 0;
+        return elevators.get(elevatorNumber).speed;
     }
 
     @Override
@@ -32,7 +57,7 @@ public class ElevatorManager  implements IElevator{
 
     @Override
     public int getElevatorDoorStatus(int elevatorNumber) throws RemoteException {
-        return 0;
+        return elevators.get(elevatorNumber).doorStatus.ordinal();
     }
 
     @Override
@@ -52,17 +77,17 @@ public class ElevatorManager  implements IElevator{
 
     @Override
     public int getElevatorSpeed(int elevatorNumber) throws RemoteException {
-        return 0;
+        return elevators.get(elevatorNumber).speed;
     }
 
     @Override
     public int getElevatorWeight(int elevatorNumber) throws RemoteException {
-        return 0;
+        return elevators.get(elevatorNumber).weight;
     }
 
     @Override
     public int getElevatorCapacity(int elevatorNumber) throws RemoteException {
-        return 0;
+        return elevators.get(elevatorNumber).maxWeightCapacity;
     }
 
     @Override
@@ -77,7 +102,7 @@ public class ElevatorManager  implements IElevator{
 
     @Override
     public int getFloorHeight() throws RemoteException {
-        return 0;
+        return floorHeight;
     }
 
     @Override
@@ -87,27 +112,32 @@ public class ElevatorManager  implements IElevator{
 
     @Override
     public boolean getServicesFloors(int elevatorNumber, int floor) throws RemoteException {
-        return false;
+        return this.elevators.get(elevatorNumber).serviceFloors.contains(floor);
     }
 
     @Override
     public int getTarget(int elevatorNumber) throws RemoteException {
-        return 0;
+        return  this.elevators.get(elevatorNumber).targetFloor;
     }
 
     @Override
     public void setCommittedDirection(int elevatorNumber, int direction) throws RemoteException {
-
+        this.elevators.get(elevatorNumber).direction = Elevator.Direction.values()[direction];
     }
 
     @Override
     public void setServicesFloors(int elevatorNumber, int floor, boolean service) throws RemoteException {
-
+        if(service){
+            this.elevators.get(elevatorNumber).addServiceFloor(floor);
+        }
+        else{
+            this.elevators.get(elevatorNumber).removeServiceFloor(floor);
+        }
     }
 
     @Override
     public void setTarget(int elevatorNumber, int target) throws RemoteException {
-
+        this.elevators.get(elevatorNumber).setTargetFloor(target);
     }
 
     @Override
