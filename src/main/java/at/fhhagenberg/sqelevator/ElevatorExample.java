@@ -15,7 +15,7 @@ public class ElevatorExample {
 	public static void main(String[] args) {
 
 		try {
-			IElevator controller = (IElevator) Naming.lookup("rmi://localhost/ElevatorSim");
+			IElevator controller = new ElevatorManager();
 			ElevatorExample client = new ElevatorExample(controller);
 
 			client.displayElevatorSettings();
