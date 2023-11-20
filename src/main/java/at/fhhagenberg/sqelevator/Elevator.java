@@ -25,14 +25,32 @@ public class Elevator {
      * Enum defining the directions an elevator can move (UP, DOWN, IDLE).
      */
     public enum Direction {
-        UP, DOWN, IDLE;
+        /**
+         * Represents the upward direction.
+         */
+        UP,
+        /**
+         * Represents the downward direction.
+         */
+        DOWN,
+        /**
+         * Represents the idle state (not moving).
+         */
+        IDLE;
     }
 
     /**
      * Enum defining the status of the elevator doors (OPEN, CLOSED).
      */
     public enum DoorStatus {
-        OPEN, CLOSED
+        /**
+         * Represents the open state of the elevator doors.
+         */
+        OPEN,
+        /**
+         * Represents the closed state of the elevator doors.
+         */
+        CLOSED
     }
 
     /**

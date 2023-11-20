@@ -13,22 +13,6 @@ public class ElevatorManager  implements IElevator{
     List<Floor> floors;
     private int floorHeight;
 
-    /**
-     * Constructor to initialize an Elevator object.
-     *
-     * @param elevatorNumber    The identifier for the elevator.
-     * @param maxWeightCapacity The maximum weight capacity of the elevator.
-     */
-//    public ElevatorManager(int floors, int floorHeight) {
-//
-//        for (int i = 0; i < floors; i++)
-//        {
-//            this.floors.add(new Floor(i));
-//        }
-//        this.floorHeight = floorHeight;
-//        // Initialize other properties as needed
-//    }
-
     public void addElevators(int num ){
         for(int i = 0; i < num; i++){
             elevators.add(new Elevator(1, 50));
