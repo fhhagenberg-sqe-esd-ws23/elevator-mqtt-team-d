@@ -2,9 +2,15 @@ package at.fhhagenberg.sqelevator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ElevatorManagerTest {
@@ -12,20 +18,27 @@ public class ElevatorManagerTest {
     private ElevatorManager elevatorManager;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
         // Initialize ElevatorManager and populate data model
         elevatorManager = new ElevatorManager();
         elevatorManager.elevators = new ArrayList<>();
         elevatorManager.floors = new ArrayList<>();
 
+        // Get properties
+        String rootPath = System.getProperty("user.dir");
+        String appConfigPath = rootPath + "\\properties\\IElevator.properties";
+
+        Properties elevatorProps = new Properties();
+        elevatorProps.load(new FileInputStream(appConfigPath));
+
         // Adding floors to the data model
-        int numFloors = 10; // Example: 10 floors in the building
+        int numFloors = Integer.parseInt(elevatorProps.getProperty("numFloors"));
         for (int i = 0; i < numFloors; i++) {
             elevatorManager.floors.add(new Floor(i + 1)); // Floor numbering starts from 1
         }
 
         // Adding elevators to the data model
-        int numElevators = 3; // Example: 3 elevators in the building
+        int numElevators = Integer.parseInt(elevatorProps.getProperty("numElevators"));
         elevatorManager.addElevators(numElevators); // Adds 3 elevators
 
         // Setting floor height
