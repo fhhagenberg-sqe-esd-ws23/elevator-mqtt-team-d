@@ -26,7 +26,7 @@ public class ElevatorManagerTest {
 
         // Get properties
         String rootPath = System.getProperty("user.dir");
-        String appConfigPath = rootPath + "\\properties\\IElevator.properties";
+        String appConfigPath = rootPath + "/properties/IElevator.properties";
 
         Properties elevatorProps = new Properties();
         elevatorProps.load(new FileInputStream(appConfigPath));

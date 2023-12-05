@@ -44,7 +44,7 @@
         </dependency>
 
         <!-- Uncomment to use Eclipse Paho Mqttv5 Client -->
-        <!--
+
         <dependency>
             <groupId>org.eclipse.paho</groupId>
             <artifactId>org.eclipse.paho.mqttv5.client</artifactId>
@@ -53,7 +53,7 @@
             <groupId>io.joynr.java.messaging.mqtt</groupId>
             <artifactId>paho-mqtt-client</artifactId>
             <version>1.8.12.1</version>
-        </dependency> -->
+        </dependency>
 
         <!-- Uncomment to use HiveMQ MQTT Client -->
         <dependency>
