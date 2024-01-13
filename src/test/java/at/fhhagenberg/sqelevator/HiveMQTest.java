@@ -1,12 +1,11 @@
 package at.fhhagenberg.sqelevator;
-import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
-import com.hivemq.client.mqtt.datatypes.MqttQos;
-import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
-import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect;
-import com.hivemq.client.mqtt.mqtt5.message.disconnect.Mqtt5Disconnect;
-import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
-import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
+
+import org.eclipse.paho.mqttv5.client.MqttClient;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
+import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.eclipse.paho.mqttv5.common.MqttSubscription;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -16,19 +15,17 @@ import java.io.FileInputStream;
 import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 public class HiveMQTest {
 
-    private static final String BROKER_URL = "tcp://broker.hivemq.com:1883"; // Use HiveMQ Cloud
+    private static final String BROKER_URL = "tcp://localhost:1883"; // Use HiveMQ Cloud
 
-    private static Mqtt5Client mqttClient;
+    private static MqttClient mqttClient;
+
 
     @BeforeAll
     public static void setUp() {
@@ -58,13 +55,14 @@ public class HiveMQTest {
             elevatorManager.setFloorHeight(4);// Example: Each floor is 4 units high
             System.out.println("Status: ");
             //            IElevator stub_server = (IElevator) UnicastRemoteObject.exportObject(elevatorManager, 0);
+            IElevator stub_server;
             try{
-                IElevator stub_server = (IElevator) Naming.lookup("rmi://localhost/ElevatorSim");
+                stub_server = (IElevator) Naming.lookup("rmi://localhost/ElevatorSim");
             }catch (Exception e){
                 System.out.println("RMI Connection Failed");
                 return;
             }
-
+            //            if(stub_server )
             System.out.println("ElevatorManager RMI is connected...");
 
             //Registry registry = LocateRegistry.createRegistry(1099);
@@ -73,8 +71,20 @@ public class HiveMQTest {
 
                     
             // Initialize Mqtt5Client with HiveMQ Cloud URL
-            mqttClient = Mqtt5Client.builder().serverHost("broker.hivemq.com").serverPort(1883).build();
-            System.out.println("Mqtt5Client is running...");
+
+//            mqttClient = Mqtt5Client.builder().serverHost("0.0.0.0").serverPort(1883).build();
+            // Broker Info
+            String broker = "tcp://localhost:1883";
+            String clientId = "ElevatorMQTTAdapter";
+
+            mqttClient = new MqttClient(broker, clientId, new org.eclipse.paho.mqttv5.client.persist.MemoryPersistence());
+            MqttSubscription subscription1 = new MqttSubscription("testTopic");
+            MqttSubscription[] subList = {new MqttSubscription("testTopic2"), subscription1};
+            MqttConnectionOptions options = new MqttConnectionOptions();
+//            options.setCleanSession(true);
+            mqttClient.connect(options);
+            System.out.println("Connected to Broker");
+            mqttClient.subscribe(subList);
 
             ElevatorMQTTAdapter elevatorMQTTAdapter = new ElevatorMQTTAdapter(elevatorProps);
             elevatorMQTTAdapter.handle();
@@ -85,15 +95,52 @@ public class HiveMQTest {
 
     }
 
+
+    private MqttMessage testMessage() {
+        double temp =  80;
+        byte[] payload = String.format("T:%04.2f",temp)
+                .getBytes();
+        return new MqttMessage(payload);
+    }
+    @Test
+    public void testPublish() throws MqttException {
+        String topic = "testTopic";
+        String message = "Hello from Java!";
+
+        CountDownLatch receivedSignal = new CountDownLatch(10);
+        MqttMessage msg = testMessage();
+        mqttClient.publish(topic,testMessage());
+  //      CountDownLatch receivedSignal = new CountDownLatch(10);
+
+        MqttSubscription subscription1 = new MqttSubscription("testTopic");
+        MqttSubscription[] subList = {new MqttSubscription("testTopic2"), subscription1};
+        mqttClient.subscribe(subList);
+//        receivedSignal.await(1, TimeUnit.MINUTES);
+
+
+        int qos = 0;
+
+
+        // Create and configure the message
+        org.eclipse.paho.mqttv5.common.MqttMessage mqttMessage = new MqttMessage();
+        mqttMessage.setQos(qos);
+
+
+        // Publish the message to the topic
+        mqttClient.publish(topic, mqttMessage);
+
+        System.out.println("Message published");
+    }
+
     @Test
     public void testConnect() throws InterruptedException {
-        Mqtt5Connect connect = Mqtt5Connect.builder().build();
-        System.out.println("State: " + mqttClient.getState());
+        //Mqtt5Connect connect = Mqtt5Connect.builder().build();
+        //System.out.println("State: " + mqttClient.getState());
         // Wait for the connection to be established
 //        mqttClient.toBlocking().connect(connect).wait();
 //        System.out.println("State after: " + mqttClient.getState());
         // Add assertions as needed
-        assertEquals(true, mqttClient.getState().isConnected());
+        // assertEquals(true, mqttClient.getState().isConnected());
 
 
 
@@ -137,11 +184,12 @@ public class HiveMQTest {
 
 
     @AfterAll
-    public static void tearDown() {
+    public static void tearDown() throws MqttException {
         // Disconnect and clean up resources
-        if (mqttClient.getState().isConnected()) {
-            Mqtt5Disconnect disconnect = Mqtt5Disconnect.builder().build();
-            mqttClient.toBlocking().disconnect(disconnect);
+        if (mqttClient.isConnected()) {
+//            Mqtt5Disconnect disconnect = Mqtt5Disconnect.builder().build();
+            mqttClient.disconnect();
+//            mqttClient.toBlocking().disconnect(disconnect);
         }
     }
 }

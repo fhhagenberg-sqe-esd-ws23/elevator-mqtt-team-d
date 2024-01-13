@@ -47,6 +47,15 @@ public class ElevatorMQTTAdapter {
     // Implement a method to publish messages to MQTT
     private void publishMessage(String topic, String message) {
         try {
+            String publisherId = "Bruno";
+            IMqttClient publisher = new MqttClient("tcp://0.0.0.0:1883",publisherId);
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setAutomaticReconnect(true);
+            options.setCleanSession(true);
+            options.setConnectionTimeout(10);
+            publisher.connect(options);
+
+
             MqttMessage mqttMessage = new MqttMessage(message.getBytes());
             mqttMessage.setQos(1); // You can adjust the QoS level
             mqttClient.publish(topic, mqttMessage);
@@ -56,7 +65,7 @@ public class ElevatorMQTTAdapter {
     }
 
     // Implement a listener for MQTT control messages
-    private class ControlMessageListener implements IMqttMessageListener {
+    public class ControlMessageListener implements IMqttMessageListener {
         @Override
         public void messageArrived(String topic, MqttMessage message) throws RemoteException {
             // Process control message and call corresponding RMI method
@@ -87,7 +96,7 @@ public class ElevatorMQTTAdapter {
             public void run() {
                 try {
                     pollElevatorState();
-                } catch (RemoteException e) {
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
