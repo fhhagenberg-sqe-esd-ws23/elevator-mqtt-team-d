@@ -1,9 +1,9 @@
 package at.fhhagenberg.sqelevator;
 
+import sqelevator.IElevator;
+
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 /**

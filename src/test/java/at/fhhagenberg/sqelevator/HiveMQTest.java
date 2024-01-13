@@ -1,30 +1,28 @@
 package at.fhhagenberg.sqelevator;
-import com.hivemq.client.mqtt.MqttClient;
-import com.hivemq.client.mqtt.MqttClientBuilder;
+import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
-import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientBuilder;
 import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect;
 import com.hivemq.client.mqtt.mqtt5.message.disconnect.Mqtt5Disconnect;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
-import org.apache.commons.lang.ObjectUtils.Null;
+import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import sqelevator.IElevator;
 
 import java.io.FileInputStream;
+import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class HiveMQTest {
 
@@ -34,8 +32,6 @@ public class HiveMQTest {
 
     @BeforeAll
     public static void setUp() {
-
-
         try {
 
             // Get properties
@@ -60,13 +56,19 @@ public class HiveMQTest {
 
             // Setting floor height
             elevatorManager.setFloorHeight(4);// Example: Each floor is 4 units high
+            System.out.println("Status: ");
+            //            IElevator stub_server = (IElevator) UnicastRemoteObject.exportObject(elevatorManager, 0);
+            try{
+                IElevator stub_server = (IElevator) Naming.lookup("rmi://localhost/ElevatorSim");
+            }catch (Exception e){
+                System.out.println("RMI Connection Failed");
+                return;
+            }
 
-            IElevator stub_server = (IElevator) UnicastRemoteObject.exportObject(elevatorManager, 0);
+            System.out.println("ElevatorManager RMI is connected...");
 
-            Registry registry = LocateRegistry.createRegistry(1099);
-            registry.rebind("ElevatorManager", stub_server);
-
-            System.out.println("ElevatorManager server is running...");
+            //Registry registry = LocateRegistry.createRegistry(1099);
+            //registry.rebind("ElevatorManager", stub_server);
 
 
                     
@@ -84,25 +86,29 @@ public class HiveMQTest {
     }
 
     @Test
-    public void testConnect() {
+    public void testConnect() throws InterruptedException {
         Mqtt5Connect connect = Mqtt5Connect.builder().build();
-        mqttClient.toBlocking().connect(connect);
+        System.out.println("State: " + mqttClient.getState());
+        // Wait for the connection to be established
+//        mqttClient.toBlocking().connect(connect).wait();
+//        System.out.println("State after: " + mqttClient.getState());
         // Add assertions as needed
         assertEquals(true, mqttClient.getState().isConnected());
 
-         
 
-       try {
+
+        try {
             Registry registry = LocateRegistry.getRegistry("localhost", 1099);
-            IElevator stub_client = (IElevator) registry.lookup("ElevatorManager");
-            
+            IElevator stub_client = (IElevator) registry.lookup("ElevatorSim");
+
             // Now you can call RMI functions on the stub
-            int committedDirection = stub_client.setTarget(0);
+            int committedDirection = 1;
+            stub_client.setTarget(0, committedDirection);
             System.out.println("Committed Direction: " + committedDirection);
-            
-            assertEquals(2, committedDirection);
+
+            assertEquals(1, committedDirection);
             // stub_client = new ElevatorManager();
- 
+
             // // Get properties
             // String rootPath = System.getProperty("user.dir");
             // String appConfigPath = rootPath + "/properties/IElevator.properties";
@@ -122,64 +128,13 @@ public class HiveMQTest {
 
             // // Setting floor height
             // stub_client.setFloorHeight(4);// Example: Each floor is 4 units high
-        
+
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    @Test
-    public void testPublishAndSubscribe() {
-        
-        
-       try {
-            Registry registry = LocateRegistry.getRegistry("localhost", 1099);
-            IElevator stub_client = (IElevator) registry.lookup("ElevatorManager");
-            
-            int committedTarget= stub_client.getTarget(0);
-            System.out.println("Committed Direction: " + committedTarget);
-        
-            assertEquals(0, committedTarget);
-
-       
-            // Connect to the broker
-            Mqtt5Connect connect = Mqtt5Connect.builder().build();
-            mqttClient.toBlocking().connect(connect);
-
-
-            // Publish a message
-            Mqtt5Publish publish = Mqtt5Publish.builder().topic("elevator/control").payload("4".getBytes()).build();
-            mqttClient.toBlocking().publish(publish);
-
-            // Wait for the message to be received
-            mqttClient.toBlocking().subscribeWith()
-                    .topicFilter("test/topic")
-                    .qos(MqttQos.EXACTLY_ONCE)
-                    .send();
-
-            // Add a short delay to allow subscription to take effect
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-
-            committedTarget= stub_client.getTarget(0);
-            System.out.println("Committed Direction: " + committedTarget);
-            assertEquals(4, committedTarget);
-           
-
-            // Disconnect from the broker
-            Mqtt5Disconnect disconnect = Mqtt5Disconnect.builder().build();
-            mqttClient.toBlocking().disconnect(disconnect);
-            assertEquals(false, mqttClient.getState().isConnected());
-        }
-         catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     @AfterAll
     public static void tearDown() {

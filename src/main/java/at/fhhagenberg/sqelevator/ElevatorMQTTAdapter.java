@@ -1,9 +1,9 @@
 package at.fhhagenberg.sqelevator;
-import org.apache.commons.lang.ObjectUtils.Null;
 import org.eclipse.paho.client.mqttv3.*;
+import sqelevator.IElevator;
 
-import java.io.FileInputStream;
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -35,7 +35,7 @@ public class ElevatorMQTTAdapter {
     }
 
     // Implement the method to poll elevator state and publish to MQTT
-    private void pollElevatorState() {
+    private void pollElevatorState() throws RemoteException {
         // Implement polling logic and publish MQTT messages
         // ...
 
@@ -58,7 +58,7 @@ public class ElevatorMQTTAdapter {
     // Implement a listener for MQTT control messages
     private class ControlMessageListener implements IMqttMessageListener {
         @Override
-        public void messageArrived(String topic, MqttMessage message) {
+        public void messageArrived(String topic, MqttMessage message) throws RemoteException {
             // Process control message and call corresponding RMI method
             // ...
 
@@ -85,7 +85,11 @@ public class ElevatorMQTTAdapter {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                pollElevatorState();
+                try {
+                    pollElevatorState();
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }, 0, pollingInterval);
 

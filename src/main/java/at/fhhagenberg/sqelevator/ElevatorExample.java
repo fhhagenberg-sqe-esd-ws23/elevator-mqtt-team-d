@@ -1,6 +1,7 @@
 package at.fhhagenberg.sqelevator;
 
-import java.rmi.Naming;
+import sqelevator.IElevator;
+
 import java.rmi.RemoteException;
 
 
