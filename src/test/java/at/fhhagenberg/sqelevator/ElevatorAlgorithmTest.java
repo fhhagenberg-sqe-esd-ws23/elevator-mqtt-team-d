@@ -68,7 +68,7 @@ public class ElevatorAlgorithmTest {
 
 
         } catch (Exception e) {
-            e.printStackTrace(); 
+            e.printStackTrace();
         }
     }
 
@@ -83,8 +83,7 @@ public class ElevatorAlgorithmTest {
     // - Simulate elevator moving by manipulating ElevManagerState
     // - publish new elev location
     // - Should check in Algo if new location has been saved
-
-    // - Algo -> broker ->  Adapter -> Rmi -> (request changed data)
+    
 
     @Test
     public void testAlgo() throws MqttException, InterruptedException {
