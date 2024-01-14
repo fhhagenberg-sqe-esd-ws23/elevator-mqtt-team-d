@@ -9,14 +9,20 @@ import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
+import java.util.function.Consumer;
+
 public class MqttHandler implements MqttCallback {
     MqttClient client;
     String serverURI;
     String clientID;
 
-    public MqttHandler(String serverURI, String clientID){
+    Consumer<String> messageArrivedCallback;
+
+
+    public MqttHandler(String serverURI, String clientID, Consumer<String> messageArrivedCallback) {
         this.serverURI = serverURI;
         this.clientID = clientID;
+        this.messageArrivedCallback = messageArrivedCallback;
         try {
             client = new MqttClient(this.serverURI, this.clientID);
             if(!client.isConnected())
@@ -63,6 +69,11 @@ public class MqttHandler implements MqttCallback {
     public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
         System.out.println("Message Arrived:");
         System.out.println(mqttMessage.toString());
+
+        // Call the callback function with the received message
+        if (messageArrivedCallback != null) {
+            messageArrivedCallback.accept(mqttMessage.toString());
+        }
     }
 
     @Override
