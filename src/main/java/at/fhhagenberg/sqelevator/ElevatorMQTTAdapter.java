@@ -33,6 +33,7 @@ import java.util.TimerTask;
                 // Subscribe to the topic for setting elevator parameters
                 String controlTopic = this.properties.getProperty("mqtt.topic.control");
                 this.mqttClient.subscribe(controlTopic, new ControlMessageListener());
+                
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -54,15 +55,24 @@ import java.util.TimerTask;
         // Implement a method to publish messages to MQTT
         private void publishMessage(String topic, String message) {
             try {
-                MqttMessage mqttMessage = new MqttMessage(message.getBytes());
-                mqttMessage.setQos(1); // You can adjust the QoS level
-                if(this.mqttClient.isConnected()){
-                    System.out.println("HURE------------------------------------------------------------------------------------------------------------------------------"); 
-                } 
-                this.mqttClient.publish(topic, mqttMessage);
+                // Use a synchronized block to ensure atomicity
+                synchronized (this) {
+                    // Check if the client is connected
+                    if (this.mqttClient.isConnected()) {
+                        System.out.println("HURE------------------------------------------------------------------------------------------------------------------------------");
+                        MqttMessage mqttMessage = new MqttMessage(message.getBytes());
+                        mqttMessage.setQos(1); // You can adjust the QoS level
+                        this.mqttClient.publish(topic, mqttMessage);
+                    } else {
+                        System.err.println("MQTT client is not connected. Message not published.");
+                        this.mqttClient.connect();
+                
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        
         }
 
         // Implement a listener for MQTT control messages
@@ -71,7 +81,7 @@ import java.util.TimerTask;
             public void messageArrived(String topic, MqttMessage message) {
                 // Process control message and call corresponding RMI method
                 // ...
-
+                System.out.println("ControlMessageListener called");
                 // Example: set target floor based on the control message
                 int targetPositon = Integer.parseInt(message.toString());
                 elevator.setElevatorPosition(0, targetPositon);

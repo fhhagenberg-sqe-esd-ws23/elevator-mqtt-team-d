@@ -20,6 +20,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -73,16 +74,7 @@ public class HiveMQTest {
 
  // Initialize Mqtt5Client with HiveMQ Cloud URL
           
-                    
-            // Initialize Mqtt5Client with HiveMQ Cloud URL
-            Consumer<String> messageCallback = message -> {
-                // Your custom logic for handling the arrived message
-                System.out.println("Received message: " + message);
-                assertEquals(message, "123123");
-            };
-//            mqttClient = Mqtt5Client.builder().serverHost("0.0.0.0").serverPort(1883).build();
-            mqttTestClient = new MqttHandler(elevatorProps.getProperty("mqtt.broker.url"), "client1", messageCallback);            
-            mqttTestClient.subscribeToTopic("elevator/position");
+                
 
             elevatorMQTTAdapter = new ElevatorMQTTAdapter(elevatorProps);
             elevatorMQTTAdapter.handle();
@@ -94,21 +86,28 @@ public class HiveMQTest {
 
     }
     @Test
-    public void testSetElevatorPositon() throws MqttException, InterruptedException {
-       
+    public void testSetElevatorPosition() throws MqttException, InterruptedException {
+        // Create a CountDownLatch with a count of 1
+        CountDownLatch latch = new CountDownLatch(1);
+
         Consumer<String> messageCallback = message -> {
-            // Your custom logic for handling the arrived message
             System.out.println("Received message: " + message);
-            assertEquals(message, "123123");
+            assertEquals(message, "0");
+
+            // Count down the latch to unblock the test
+            latch.countDown();
         };
 
         MqttHandler mqttTestClient = new MqttHandler(elevatorProps.getProperty("mqtt.broker.url"), "client1", messageCallback);
-        Thread.sleep(10);
-        mqttTestClient.subscribeToTopic("elevator/position");       
+        mqttTestClient.subscribeToTopic("elevator/position");
         mqttTestClient.publishOnTopic("elevator/control", "4");
-        
-    }
 
+        // Wait for the latch to be counted down or timeout after 10 seconds
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            // If the latch is not counted down within the timeout, fail the test
+            throw new AssertionError("Timeout waiting for message arrival");
+        }
+    }
    
 
     @AfterAll
