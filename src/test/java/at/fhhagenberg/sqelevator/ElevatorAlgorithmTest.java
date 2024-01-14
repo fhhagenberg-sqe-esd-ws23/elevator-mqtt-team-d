@@ -71,6 +71,21 @@ public class ElevatorAlgorithmTest {
             e.printStackTrace();
         }
     }
+
+    //TODO Integration test:
+    // - InitAdapter
+    // - InitAlgo
+    // - InitRMI
+    // - Manipulate ElevatorManager State setTarget:3
+    // - Manipulated ElevatorManager State gets Polled and Published by Adapter via MQTT
+    // - Algo Reacts and publishes command for elevator to go (setTarget:3) ... and set it in ElevatorManager
+    // - Check ElevatorManagerState in test if modified (getTarget == 3)
+    // - Simulate elevator moving by manipulating ElevManagerState
+    // - publish new elev location
+    // - Should check in Algo if new location has been saved
+
+    // - Algo -> broker ->  Adapter -> Rmi -> (request changed data)
+
     @Test
     public void testAlgo() throws MqttException, InterruptedException {
 

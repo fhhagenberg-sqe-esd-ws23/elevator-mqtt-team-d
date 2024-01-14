@@ -22,8 +22,10 @@ public class ElevatorAlgorithm implements MqttCallback {
         private Properties properties;
 
         private static List<Elevator> elevatorList;
+    private static List<Boolean> floorList;
 
-        private static int MAXWEIGHT = 500;
+
+    private static int MAXWEIGHT = 500;
 
         public ElevatorAlgorithm(Properties config) {
             this.properties = config;
@@ -42,9 +44,11 @@ public class ElevatorAlgorithm implements MqttCallback {
                         new MqttSubscription(this.properties.getProperty("floor.button.topic"),2) };
 
                 int numOfElevators = Integer.parseInt(this.properties.getProperty("numElevators"));
+                int numOfFloors = Integer.parseInt(this.properties.getProperty("numFloors"));
                 elevatorList = new ArrayList<>(numOfElevators);
+                floorList  = new ArrayList<>(numOfFloors);
                 for(int i = 0; i <  numOfElevators; i++){
-                    elevatorList.add(new Elevator(i, MAXWEIGHT));
+                    elevatorList.add(new Elevator(i, MAXWEIGHT,Integer.parseInt(this.properties.getProperty("numFloors")) ));
                 }
                 try{
                     mqttClient.subscribe(subs);
@@ -60,7 +64,80 @@ public class ElevatorAlgorithm implements MqttCallback {
         private int calculateElevator(int floorIdx, int buttonPressed) {
             //TODO
             System.out.println("calculating...");
-            return 0;
+            int selectedElevator = -1;
+            int minDistance = Integer.MAX_VALUE;
+            int numOfElevators = Integer.parseInt(this.properties.getProperty("numElevators"));
+
+            for (int elevatorNumber = 0; elevatorNumber < numOfElevators; elevatorNumber++) {
+                int currentFloor = elevatorList.get(elevatorNumber).getCurrentFloor();
+                int distance = Math.abs(currentFloor - floorIdx);
+                int direction = elevatorList.get(elevatorNumber).getDirection().ordinal();
+                boolean isIdle = direction == IElevator.ELEVATOR_DIRECTION_UNCOMMITTED;
+
+                // If the elevator is idle or moving towards the request floor, consider it for selection
+                if (isIdle || (direction == IElevator.ELEVATOR_DIRECTION_UP && currentFloor < floorIdx)
+                        || (direction == IElevator.ELEVATOR_DIRECTION_DOWN && currentFloor > floorIdx)) {
+                    // Choose the elevator with the shortest distance to the request floor
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        selectedElevator = elevatorNumber;
+                    }
+                }
+            }
+
+            // If no elevator is moving towards or currently idle, just pick the closest one
+            if (selectedElevator == -1) {
+                for (int elevatorNumber = 0; elevatorNumber < numOfElevators; elevatorNumber++) {
+                    int currentFloor = elevatorList.get(elevatorNumber).getCurrentFloor();
+                    int distance = Math.abs(currentFloor - floorIdx);
+
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        selectedElevator = elevatorNumber;
+                    }
+                }
+            }
+
+            return selectedElevator;
+        }
+
+        public void moveElevator(int elevatorIdx, int floor){
+            System.out.println("moving...");
+
+            Elevator.Direction direction = Elevator.Direction.ELEVATOR_DIRECTION_UNCOMMITTED;
+            if(elevatorList.get(elevatorIdx).getCurrentFloor() > floor){
+                direction = Elevator.Direction.ELEVATOR_DIRECTION_DOWN;
+            }
+            else if (elevatorList.get(elevatorIdx).getCurrentFloor() < floor){
+                direction = Elevator.Direction.ELEVATOR_DIRECTION_UP;
+            }
+            this.publishMessage("elevator/control/" + elevatorIdx,"setTarget:" + floor);
+            this.publishMessage("elevator/control/" + elevatorIdx,"setCommittedDirection:" + direction.ordinal());
+        }
+
+        public void pollElevatorState()
+        {
+            MqttSubscription[] subs = {new MqttSubscription(this.properties.getProperty("elevator.state.topic"),2)};
+
+        }
+
+        public void handle() {
+
+            // Schedule polling task at fixed intervals
+            long pollingInterval = Long.parseLong(this.properties.getProperty("polling.interval"));
+            Timer timer = new Timer();
+            timer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    pollElevatorState();
+                }
+            }, 0, pollingInterval);
+
+            // Add shutdown hook to gracefully disconnect from MQTT broker on application exit
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                shutdown();
+                timer.cancel();
+            }));
         }
 
         // Implement a method to publish messages to MQTT
@@ -110,7 +187,7 @@ public class ElevatorAlgorithm implements MqttCallback {
             }
             System.out.println("topic");
             String elevatorIDstring = topicParts[2];
-            int floor = Integer.parseInt(elevatorIDstring);
+            int index = Integer.parseInt(elevatorIDstring);
             String topicPart = topicParts[1];
 
 
@@ -118,23 +195,33 @@ public class ElevatorAlgorithm implements MqttCallback {
             int value = Integer.parseInt(message);
 
             //System.out.println("Command: " + command);
-            System.out.println("ElevatorID: " + floor);
+            System.out.println("ElevatorID: " + index);
             System.out.println( "Value: " + value);
 
             System.out.println( "Topic0: " + topicParts[0]);
             System.out.println( "Topic1: " + topicParts[1]);
             System.out.println( "Topic2: " + topicParts[2]);
 
+
+            //elevator/button/elevIDX
+            //elevator/state/elevIDX
+            //floor/button/floorIDX
+            //TODO Add other ways to adapt Datamodel data
             if(topicParts[0].equals("elevator")){
                 if(topicParts[1].equals("state")){
                     
                 } else if (topicParts[1].equals("button")) {
-                    
+                    elevatorList.get(index).pressedButtons.set(value, true);
+                    //TODO RESET IF ELEVATOR REACHES THIS FLOOR
                 }
             } else if (topicParts[0].equals("floor")) {
-                int elevatorToGo = this.calculateElevator(floor, value);
-                System.out.println("elevator/control/" + elevatorToGo + "\n" + "setTarget:" + floor);
-                this.publishMessage("elevator/control/" + elevatorToGo,"setTarget:" + floor);
+                floorList.set(index, true);
+
+                //TODO Put this shit into a update function that just updates elevator controls
+//                int elevatorToGo = this.calculateElevator(index, value);
+//                System.out.println("elevator/control/" + elevatorToGo + "\n" + "setTarget:" + index);
+//                elevatorList.get(elevatorToGo).move();
+//                this.moveElevator(elevatorToGo, index);
             }
 
 

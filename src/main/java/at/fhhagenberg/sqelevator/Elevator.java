@@ -1,5 +1,6 @@
 package at.fhhagenberg.sqelevator;
 
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,8 @@ public class Elevator {
     private boolean isMoving;
     private boolean isDoorOpen;
 
+    public List<Boolean> pressedButtons;
+
 
     /**
      * Enum defining the directions an elevator can move (UP, DOWN, IDLE).
@@ -28,15 +31,15 @@ public class Elevator {
         /**
          * Represents the upward direction.
          */
-        UP,
+        ELEVATOR_DIRECTION_UP,
         /**
          * Represents the downward direction.
          */
-        DOWN,
+        ELEVATOR_DIRECTION_DOWN,
         /**
          * Represents the idle state (not moving).
          */
-        IDLE;
+        ELEVATOR_DIRECTION_UNCOMMITTED;
     }
 
     /**
@@ -46,11 +49,11 @@ public class Elevator {
         /**
          * Represents the open state of the elevator doors.
          */
-        OPEN,
+        ELEVATOR_DOORS_OPEN,
         /**
          * Represents the closed state of the elevator doors.
          */
-        CLOSED
+        ELEVATOR_DOORS_CLOSED
     }
 
     /**
@@ -59,14 +62,14 @@ public class Elevator {
      * @param elevatorNumber    The identifier for the elevator.
      * @param maxWeightCapacity The maximum weight capacity of the elevator.
      */
-    public Elevator(int elevatorNumber, int maxWeightCapacity) {
+    public Elevator(int elevatorNumber, int maxWeightCapacity, int numOfFloors) {
         this.elevatorNumber = elevatorNumber;
         this.maxWeightCapacity = maxWeightCapacity;
         this.serviceFloors = new HashSet<>();
-
+        this.pressedButtons = new ArrayList<>(numOfFloors);
         currentFloor = 0;
-        direction = Direction.IDLE;
-        doorStatus = DoorStatus.CLOSED;
+        direction = Direction.ELEVATOR_DIRECTION_UNCOMMITTED;
+        doorStatus = DoorStatus.ELEVATOR_DOORS_CLOSED;
         weight = 0;
         speed = 0;
         targetFloor = 0;
@@ -81,6 +84,7 @@ public class Elevator {
      */
     public void move(Direction direction) {
         this.direction = direction;
+
         // Implement logic to move the elevator
         // Example: Update currentFloor based on the direction and speed of the elevator
     }
@@ -89,7 +93,7 @@ public class Elevator {
      * Opens the elevator door.
      */
     public void openDoor() {
-        this.doorStatus = DoorStatus.OPEN;
+        this.doorStatus = DoorStatus.ELEVATOR_DOORS_OPEN;
         // Implement logic to open the door
     }
 
@@ -97,7 +101,7 @@ public class Elevator {
      * Closes the elevator door.
      */
     public void closeDoor() {
-        this.doorStatus = DoorStatus.CLOSED;
+        this.doorStatus = DoorStatus.ELEVATOR_DOORS_CLOSED;
         // Implement logic to close the door
     }
 

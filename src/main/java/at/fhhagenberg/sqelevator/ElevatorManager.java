@@ -41,7 +41,7 @@ public class ElevatorManager implements IElevator {
      */
     public void addElevators(int num) {
         for (int i = 0; i < num; i++) {
-            elevators.add(new Elevator(1, 50)); // Assuming default values for elevator ID and maximum weight capacity
+            elevators.add(new Elevator(1, 500, 10)); // Assuming default values for elevator ID and maximum weight capacity
         }
     }
 

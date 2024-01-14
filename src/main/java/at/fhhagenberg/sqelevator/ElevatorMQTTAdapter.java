@@ -63,6 +63,7 @@ import java.util.TimerTask;
                    // Publish elevator's position
                    int elevatorPosition = this.elevator.getElevatorPosition(elevatorNumber);
                    publishMessage("elevator/position/" + elevatorNumber, String.valueOf(elevatorPosition));
+
                    // Publish elevator's committed direction
                    int committedDirection = this.elevator.getCommittedDirection(elevatorNumber);
                    publishMessage("elevator/committedDirection/" + elevatorNumber, String.valueOf(committedDirection));
@@ -79,7 +80,6 @@ import java.util.TimerTask;
                    int elevatorFloor = this.elevator.getElevatorFloor(elevatorNumber);
                    publishMessage("elevator/currentFloor/" + elevatorNumber, String.valueOf(elevatorFloor));
 
-
                    // Publish elevator's speed
                    int elevatorSpeed = this.elevator.getElevatorSpeed(elevatorNumber);
                    publishMessage("elevator/speed/" + elevatorNumber, String.valueOf(elevatorSpeed));
@@ -95,6 +95,29 @@ import java.util.TimerTask;
                     // Publish elevator's target floor
                     int targetFloor = this.elevator.getTarget(i);
                     publishMessage("elevator/target/" + i, String.valueOf(targetFloor));
+
+
+                    // Publish pressed buttons of elevator
+                    for(int j = 0 ; j < Integer.parseInt(properties.getProperty("numFloors")); j++)
+                    {
+                        if (this.elevator.getElevatorButton(i, j));
+                        {
+                            publishMessage("elevator/button/" + i, String.valueOf(j));// Publish elevator's target floor
+                        }
+
+                    }
+
+                }
+                for(int i = 0; i < Integer.parseInt(properties.getProperty("numFloors")); i++)
+                {
+                    if(this.elevator.getFloorButtonUp(i) || this.elevator.getFloorButtonDown(i))
+                    {
+                        publishMessage("floor/button/" + i, "1");
+                        //TODO RESET IF ELEVATOR REACHES THIS FLOOR
+                    }
+                    else {
+                        publishMessage("floor/button/" + i, "0");
+                    }
                 }
 
 
