@@ -3,6 +3,7 @@ package at.fhhagenberg.sqelevator;
 
 import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
+import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import sqelevator.IElevator;
 
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -104,9 +106,38 @@ public class HiveMQTest {
     }
     @Test
     public void testPublish() throws MqttException {
+        /*
+        You need to start HiveMQ server first in terminal:
+        docker run -p 8080:8080 -p 1883:1883 hivemq/hivemq4
+         */
         String topic = "testTopic";
         String message = "Hello from Java!";
+        String clientID = "test Function";
+        String uri = "tcp://localhost:1883";
+        MqttHandler handler = new MqttHandler(uri, clientID);
+        handler.subscribeToTopic(topic);
+        handler.publishOnTopic(topic,"Hello");
+/*
+        String topic = "testTopic";
+        String message = "Hello from Java!";
+        String clientID = "test Function";
+        MqttClient client = new MqttClient(
+                "tcp://localhost:1883", //URI
+                clientID, //ClientId
+                new MemoryPersistence()); //Persistence
+        client.connect();
+        if (client.isConnected()){
+            System.out.println("MQTT Client Connected");
+        }else{
+            System.out.println("MQTT Client not Connected");
+        }
+        client.subscribe(topic,1);
+        int QoS = 2;
+        boolean retained = false;
+        client.publish(topic, message.getBytes(), QoS, retained);
+*/
 
+/*
         CountDownLatch receivedSignal = new CountDownLatch(10);
         MqttMessage msg = testMessage();
         mqttClient.publish(topic,testMessage());
@@ -115,13 +146,14 @@ public class HiveMQTest {
         MqttSubscription subscription1 = new MqttSubscription("testTopic");
         MqttSubscription[] subList = {new MqttSubscription("testTopic2"), subscription1};
         mqttClient.subscribe(subList);
+*/
 //        receivedSignal.await(1, TimeUnit.MINUTES);
 
 
-        int qos = 0;
+//        int qos = 0;
 
 
-        // Create and configure the message
+/*        // Create and configure the message
         org.eclipse.paho.mqttv5.common.MqttMessage mqttMessage = new MqttMessage();
         mqttMessage.setQos(qos);
 
@@ -129,7 +161,7 @@ public class HiveMQTest {
         // Publish the message to the topic
         mqttClient.publish(topic, mqttMessage);
 
-        System.out.println("Message published");
+        System.out.println("Message published");*/
     }
 
     @Test
