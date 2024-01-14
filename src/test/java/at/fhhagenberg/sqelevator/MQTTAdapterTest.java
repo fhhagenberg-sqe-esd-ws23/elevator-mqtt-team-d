@@ -1,4 +1,4 @@
-/*
+
 package at.fhhagenberg.sqelevator;
 
 import org.eclipse.paho.client.mqttv3.*;
@@ -47,7 +47,7 @@ public class MQTTAdapterTest {
         elevatorMQTTAdapter = new ElevatorMQTTAdapter(elevatorProps);
     }
 
-    @Test
+    /* @Test
     public void testElevatorPositionPublishedToMQTT() throws RemoteException, MqttException {
         // Arrange
         when(mockElevator.getElevatorPosition(0)).thenReturn(5);
@@ -95,9 +95,9 @@ public class MQTTAdapterTest {
         // Add assertions here to verify that the message was processed correctly
         // This depends on the specifics of how your ElevatorMQTTAdapter handles messages
     }
-
+ */
 // Add more test methods here
-    */
+    
 /**
      * Test case for verifying that a control message sets the target floor correctly.
      *
