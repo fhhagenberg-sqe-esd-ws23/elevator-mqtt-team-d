@@ -42,8 +42,7 @@ public class HiveMQTest {
 
             elevatorProps = new Properties();
             elevatorProps.load(new FileInputStream(appConfigPath));
-   
-        
+
             ElevatorManager elevatorManager = new ElevatorManager();
             /*********** Prepare  ***************/
             // Adding floors to the data model
