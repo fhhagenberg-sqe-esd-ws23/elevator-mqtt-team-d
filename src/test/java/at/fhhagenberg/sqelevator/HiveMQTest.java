@@ -110,13 +110,18 @@ public class HiveMQTest {
         You need to start HiveMQ server first in terminal:
         docker run -p 8080:8080 -p 1883:1883 hivemq/hivemq4
          */
-        String topic = "testTopic";
+        String algoTopic = "algoTopic";
         String message = "Hello from Java!";
         String clientID = "test Function";
         String uri = "tcp://localhost:1883";
-        MqttHandler handler = new MqttHandler(uri, clientID);
-        handler.subscribeToTopic(topic);
-        handler.publishOnTopic(topic,"Hello");
+        MqttHandler adapter = new MqttHandler(uri, "Adapter");
+        MqttHandler algo = new MqttHandler(uri, "Algorithm");
+        adapter.subscribeToTopic("elevator/state/1");
+        algo.publishOnTopic(algoTopic,"Hello");
+
+        String uri = "tcp://localhost:1883";
+        MqttHandler algo = new MqttHandler(uri, "Algorithm");
+        adapter.subscribeToTopic("elevator/state/1");
 /*
         String topic = "testTopic";
         String message = "Hello from Java!";
