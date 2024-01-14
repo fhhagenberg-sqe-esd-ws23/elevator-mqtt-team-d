@@ -1,6 +1,13 @@
 package at.fhhagenberg.sqelevator;
-import org.apache.commons.lang.ObjectUtils.Null;
-import org.eclipse.paho.client.mqttv3.*;
+
+import org.eclipse.paho.mqttv5.client.IMqttToken;
+import org.eclipse.paho.mqttv5.client.MqttCallback;
+import org.eclipse.paho.mqttv5.client.MqttClient;
+import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
+import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.eclipse.paho.mqttv5.common.MqttSubscription;
+import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
 import sqelevator.IElevator;
 
@@ -10,7 +17,7 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
-    public class ElevatorMQTTAdapter {
+    public class ElevatorMQTTAdapter implements MqttCallback {
         private IElevator elevator;
         private MqttClient mqttClient;
         private Properties properties;
@@ -26,14 +33,20 @@ import java.util.TimerTask;
                 String brokerUrl = this.properties.getProperty("mqtt.broker.url");
                 String clientId = "ElevatorMQTTAdapter"; // You can customize this
                 this.mqttClient = new MqttClient(brokerUrl, clientId);
-                this.mqttClient.connect();
-                
-
+                if(!mqttClient.isConnected())
+                    mqttClient.connect();
+                mqttClient.setCallback(this);
 
                 // Subscribe to the topic for setting elevator parameters
-                String controlTopic = this.properties.getProperty("mqtt.topic.control");
-                this.mqttClient.subscribe(controlTopic, new ControlMessageListener());
-                
+                MqttSubscription sub = new MqttSubscription("elevator/control/2",2);
+                MqttSubscription[] subs = {sub};
+                System.out.println("subscribeToTopic");
+                try{
+                    mqttClient.subscribe(subs);
+                }catch (MqttException e){
+                    System.out.println("Subscription failed:");
+                    System.out.println(e);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -41,12 +54,53 @@ import java.util.TimerTask;
 
         // Implement the method to poll elevator state and publish to MQTT
         private void pollElevatorState() {
-            // Implement polling logic and publish MQTT messages
-            // ...
             try {
-            // Example: publish elevator position
-            int elevatorPosition = this.elevator.getElevatorPosition(0);
-            publishMessage("elevator/position", String.valueOf(elevatorPosition));
+                // Assuming elevatorNumber is defined in your class
+                int elevatorNumber = 0;  // Example elevator number
+                for (int i = 0; i < Integer.parseInt(properties.getProperty("numElevators")); i++)
+                {
+
+//                    // Publish elevator's position
+//                    int elevatorPosition = this.elevator.getElevatorPosition(elevatorNumber);
+//                    publishMessage("elevator/position/" + elevatorNumber, String.valueOf(elevatorPosition));
+//                    // Publish elevator's committed direction
+//                    int committedDirection = this.elevator.getCommittedDirection(elevatorNumber);
+//                    publishMessage("elevator/committedDirection/" + elevatorNumber, String.valueOf(committedDirection));
+//
+//                    // Publish elevator's acceleration
+//                    int elevatorAccel = this.elevator.getElevatorAccel(elevatorNumber);
+//                    publishMessage("elevator/acceleration/" + elevatorNumber, String.valueOf(elevatorAccel));
+//
+//                    // Publish elevator's door status
+//                    int elevatorDoorStatus = this.elevator.getElevatorDoorStatus(elevatorNumber);
+//                    publishMessage("elevator/doorStatus/" + elevatorNumber, String.valueOf(elevatorDoorStatus));
+//
+//                    // Publish elevator's current floor
+//                    int elevatorFloor = this.elevator.getElevatorFloor(elevatorNumber);
+//                    publishMessage("elevator/currentFloor/" + elevatorNumber, String.valueOf(elevatorFloor));
+//
+//
+//
+//                    // Publish elevator's speed
+//                    int elevatorSpeed = this.elevator.getElevatorSpeed(elevatorNumber);
+//                    publishMessage("elevator/speed/" + elevatorNumber, String.valueOf(elevatorSpeed));
+//
+//                    // Publish elevator's weight
+//                    int elevatorWeight = this.elevator.getElevatorWeight(elevatorNumber);
+//                    publishMessage("elevator/weight/" + elevatorNumber, String.valueOf(elevatorWeight));
+//
+//                    // Publish elevator's capacity
+//                    int elevatorCapacity = this.elevator.getElevatorCapacity(elevatorNumber);
+//                    publishMessage("elevator/capacity/" + elevatorNumber, String.valueOf(elevatorCapacity));
+//
+                    // Publish elevator's target floor
+                    int targetFloor = this.elevator.getTarget(i);
+                    publishMessage("elevator/target/" + i, String.valueOf(targetFloor));
+                }
+
+
+                // Additional getter functions can be added here in a similar manner
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -55,37 +109,13 @@ import java.util.TimerTask;
         // Implement a method to publish messages to MQTT
         private void publishMessage(String topic, String message) {
             try {
-                // Use a synchronized block to ensure atomicity
-                synchronized (this) {
-                    // Check if the client is connected
-                    if (this.mqttClient.isConnected()) {
-                        System.out.println("HURE------------------------------------------------------------------------------------------------------------------------------");
-                        MqttMessage mqttMessage = new MqttMessage(message.getBytes());
-                        mqttMessage.setQos(1); // You can adjust the QoS level
-                        this.mqttClient.publish(topic, mqttMessage);
-                    } else {
-                        System.err.println("MQTT client is not connected. Message not published.");
-                        this.mqttClient.connect();
-                
-                    }
-                }
+                MqttMessage mqttMessage = new MqttMessage(message.getBytes());
+                mqttMessage.setQos(1); // You can adjust the QoS level
+                this.mqttClient.publish(topic, mqttMessage);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         
-        }
-
-        // Implement a listener for MQTT control messages
-        private class ControlMessageListener implements IMqttMessageListener {
-            @Override
-            public void messageArrived(String topic, MqttMessage message) {
-                // Process control message and call corresponding RMI method
-                // ...
-                System.out.println("ControlMessageListener called");
-                // Example: set target floor based on the control message
-                int targetPositon = Integer.parseInt(message.toString());
-                elevator.setElevatorPosition(0, targetPositon);
-            }
         }
 
         // Implement a method to handle cleanup on shutdown
@@ -114,6 +144,81 @@ import java.util.TimerTask;
                 shutdown();
                 timer.cancel();
             }));
+        }
+
+        @Override
+        public void disconnected(MqttDisconnectResponse mqttDisconnectResponse) {
+            System.out.println("Disconnected");
+        }
+
+        @Override
+        public void mqttErrorOccurred(MqttException e) {
+            System.out.println("Error Occured");
+        }
+
+        @Override
+        public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
+            System.out.println("Message Arrived at Adapter:");
+            String message = mqttMessage.toString();
+            System.out.println(message);
+            System.out.println(topic);
+
+
+            /***********prepare command, elevatorID and value************/
+            //The message topic is "elevator/topic/elevID"
+            String[] topicParts = topic.split("/");
+            if (topicParts.length != 3) {
+                throw new IllegalArgumentException("Invalid message format");
+            }
+            String elevatorIDstring = topicParts[2];
+            int elevatorID = Integer.parseInt(elevatorIDstring);
+
+            // Assuming the message format is "command:value"
+            String[] commandParts = message.split(":");
+            if (commandParts.length != 2) {
+                throw new IllegalArgumentException("Invalid message format");
+            }
+            String command = commandParts[0];
+            int value = Integer.parseInt(commandParts[1]);
+
+            System.out.println("Command: " + command);
+            System.out.println("ElevatorID: " + elevatorID);
+            System.out.println( "Value: " + value);
+
+
+            switch (command) {
+                case "setTarget":
+                    this.elevator.setTarget(elevatorID, value);
+                    break;
+                case "setServicesFloors":
+                    // Assuming the second part is the floor number
+                    // The actual method call might differ based on your elevator API
+                    this.elevator.setServicesFloors(elevatorID, value, true);
+                    break;
+                case "setCommittedDirection":
+                    // Assuming value corresponds to the direction (e.g., 0 for up, 1 for down)
+                    this.elevator.setCommittedDirection(elevatorID, value);
+                    break;
+                default:
+                    System.out.println("Unknown command: " + command);
+                    break;
+            }
+        }
+
+
+        @Override
+        public void deliveryComplete(IMqttToken iMqttToken) {
+            //System.out.println("Adapter Delivery Complete");
+        }
+
+        @Override
+        public void connectComplete(boolean b, String s) {
+            //System.out.println("Adapter Connection Complete");
+        }
+
+        @Override
+        public void authPacketArrived(int i, MqttProperties mqttProperties) {
+            System.out.println("Adapter Auth Packet Arrived");
         }
 
     }
