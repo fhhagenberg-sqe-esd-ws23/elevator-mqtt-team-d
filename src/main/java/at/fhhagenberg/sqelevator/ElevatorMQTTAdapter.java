@@ -60,39 +60,38 @@ import java.util.TimerTask;
                 for (int i = 0; i < Integer.parseInt(properties.getProperty("numElevators")); i++)
                 {
 
-//                    // Publish elevator's position
-//                    int elevatorPosition = this.elevator.getElevatorPosition(elevatorNumber);
-//                    publishMessage("elevator/position/" + elevatorNumber, String.valueOf(elevatorPosition));
-//                    // Publish elevator's committed direction
-//                    int committedDirection = this.elevator.getCommittedDirection(elevatorNumber);
-//                    publishMessage("elevator/committedDirection/" + elevatorNumber, String.valueOf(committedDirection));
-//
-//                    // Publish elevator's acceleration
-//                    int elevatorAccel = this.elevator.getElevatorAccel(elevatorNumber);
-//                    publishMessage("elevator/acceleration/" + elevatorNumber, String.valueOf(elevatorAccel));
-//
-//                    // Publish elevator's door status
-//                    int elevatorDoorStatus = this.elevator.getElevatorDoorStatus(elevatorNumber);
-//                    publishMessage("elevator/doorStatus/" + elevatorNumber, String.valueOf(elevatorDoorStatus));
-//
-//                    // Publish elevator's current floor
-//                    int elevatorFloor = this.elevator.getElevatorFloor(elevatorNumber);
-//                    publishMessage("elevator/currentFloor/" + elevatorNumber, String.valueOf(elevatorFloor));
-//
-//
-//
-//                    // Publish elevator's speed
-//                    int elevatorSpeed = this.elevator.getElevatorSpeed(elevatorNumber);
-//                    publishMessage("elevator/speed/" + elevatorNumber, String.valueOf(elevatorSpeed));
-//
-//                    // Publish elevator's weight
-//                    int elevatorWeight = this.elevator.getElevatorWeight(elevatorNumber);
-//                    publishMessage("elevator/weight/" + elevatorNumber, String.valueOf(elevatorWeight));
-//
-//                    // Publish elevator's capacity
-//                    int elevatorCapacity = this.elevator.getElevatorCapacity(elevatorNumber);
-//                    publishMessage("elevator/capacity/" + elevatorNumber, String.valueOf(elevatorCapacity));
-//
+                   // Publish elevator's position
+                   int elevatorPosition = this.elevator.getElevatorPosition(elevatorNumber);
+                   publishMessage("elevator/position/" + elevatorNumber, String.valueOf(elevatorPosition));
+                   // Publish elevator's committed direction
+                   int committedDirection = this.elevator.getCommittedDirection(elevatorNumber);
+                   publishMessage("elevator/committedDirection/" + elevatorNumber, String.valueOf(committedDirection));
+
+                   // Publish elevator's acceleration
+                   int elevatorAccel = this.elevator.getElevatorAccel(elevatorNumber);
+                   publishMessage("elevator/acceleration/" + elevatorNumber, String.valueOf(elevatorAccel));
+
+                   // Publish elevator's door status
+                   int elevatorDoorStatus = this.elevator.getElevatorDoorStatus(elevatorNumber);
+                   publishMessage("elevator/doorStatus/" + elevatorNumber, String.valueOf(elevatorDoorStatus));
+
+                   // Publish elevator's current floor
+                   int elevatorFloor = this.elevator.getElevatorFloor(elevatorNumber);
+                   publishMessage("elevator/currentFloor/" + elevatorNumber, String.valueOf(elevatorFloor));
+
+
+                   // Publish elevator's speed
+                   int elevatorSpeed = this.elevator.getElevatorSpeed(elevatorNumber);
+                   publishMessage("elevator/speed/" + elevatorNumber, String.valueOf(elevatorSpeed));
+
+                   // Publish elevator's weight
+                   int elevatorWeight = this.elevator.getElevatorWeight(elevatorNumber);
+                   publishMessage("elevator/weight/" + elevatorNumber, String.valueOf(elevatorWeight));
+
+                   // Publish elevator's capacity
+                   int elevatorCapacity = this.elevator.getElevatorCapacity(elevatorNumber);
+                   publishMessage("elevator/capacity/" + elevatorNumber, String.valueOf(elevatorCapacity));
+
                     // Publish elevator's target floor
                     int targetFloor = this.elevator.getTarget(i);
                     publishMessage("elevator/target/" + i, String.valueOf(targetFloor));
