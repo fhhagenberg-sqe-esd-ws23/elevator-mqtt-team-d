@@ -38,7 +38,7 @@ import java.util.TimerTask;
                 mqttClient.setCallback(this);
 
                 // Subscribe to the topic for setting elevator parameters
-                MqttSubscription sub = new MqttSubscription("elevator/control/2",2);
+                MqttSubscription sub = new MqttSubscription("elevator/control/+",2);
                 MqttSubscription[] subs = {sub};
                 System.out.println("subscribeToTopic");
                 try{
