@@ -68,7 +68,7 @@ public class ElevatorAlgorithmTest {
 
 
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); 
         }
     }
 
