@@ -46,6 +46,7 @@ public class MQTTAdapterTest {
         // Use the properties in the ElevatorMQTTAdapter constructor
         elevatorMQTTAdapter = new ElevatorMQTTAdapter(elevatorProps);
     }
+}
 
     /* @Test
     public void testElevatorPositionPublishedToMQTT() throws RemoteException, MqttException {

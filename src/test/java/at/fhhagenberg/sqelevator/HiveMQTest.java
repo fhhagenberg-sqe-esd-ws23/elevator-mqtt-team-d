@@ -21,6 +21,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,23 +59,13 @@ public class HiveMQTest {
 
             // Setting floor height
             elevatorManager.setFloorHeight(4);// Example: Each floor is 4 units high
-            System.out.println("Status: ");
-            
-            
-            
+
             IElevator stub_server = (IElevator) UnicastRemoteObject.exportObject(elevatorManager, 0);
 
             Registry registry = LocateRegistry.createRegistry(1099);
             registry.rebind("ElevatorManager", stub_server);
 
             System.out.println("ElevatorManager server is running...");
-
-            //Registry registry = LocateRegistry.createRegistry(1099);
-            //registry.rebind("ElevatorManager", stub_server);
-
- // Initialize Mqtt5Client with HiveMQ Cloud URL
-          
-                
 
             elevatorMQTTAdapter = new ElevatorMQTTAdapter(elevatorProps);
             elevatorMQTTAdapter.handle();
@@ -86,29 +77,41 @@ public class HiveMQTest {
 
     }
     @Test
-    public void testSetElevatorPosition() throws MqttException, InterruptedException {
+    public void testSetElevatorPositon() throws MqttException, InterruptedException {
+
         // Create a CountDownLatch with a count of 1
         CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<AssertionError> assertionError = new AtomicReference<>();
 
         Consumer<String> messageCallback = message -> {
-            System.out.println("Received message: " + message);
-            assertEquals(message, "0");
+            try {
+                // Your custom logic for handling the arrived message
+                System.out.println("Received message: " + message);
 
-            // Count down the latch to unblock the test
-            latch.countDown();
+                assertEquals(message, "5");
+                // Count down the latch to unblock the test
+                latch.countDown();
+
+            } catch (AssertionError e) {
+                assertionError.set(e);
+            }
         };
 
         MqttHandler mqttTestClient = new MqttHandler(elevatorProps.getProperty("mqtt.broker.url"), "client1", messageCallback);
-        mqttTestClient.subscribeToTopic("elevator/position");
-        mqttTestClient.publishOnTopic("elevator/control", "4");
+        mqttTestClient.subscribeToTopic("elevator/target/+");
+        mqttTestClient.publishOnTopic("elevator/control/2", "setTarget:5");
 
-        // Wait for the latch to be counted down or timeout after 10 seconds
-        if (!latch.await(10, TimeUnit.SECONDS)) {
+
+        if (!latch.await(3, TimeUnit.SECONDS)) {
             // If the latch is not counted down within the timeout, fail the test
             throw new AssertionError("Timeout waiting for message arrival");
         }
+        if (assertionError.get() != null) {
+            throw assertionError.get();
+        }
+        System.out.println("End of Test!");
     }
-   
+
 
     @AfterAll
     public static void tearDown() throws MqttException {
