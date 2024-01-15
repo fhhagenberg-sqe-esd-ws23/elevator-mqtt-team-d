@@ -2,15 +2,10 @@ package at.fhhagenberg.sqelevator;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import at.fhhagenberg.sqelevator.Elevator.DoorStatus;
+import at.fhhagenberg.sqelevator.Elevator.Direction;
 /*
-Direction Enum to set direction in a request
- */
-enum Direction {
-    UP, DOWN, NONE
-}
-
-/*
+D
 Elevator Request Class contains infs on requests only from elevators
 TODO: Request Class for each type of Channel
  */

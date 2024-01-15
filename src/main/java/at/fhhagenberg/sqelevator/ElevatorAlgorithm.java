@@ -9,7 +9,9 @@ import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
+import at.fhhagenberg.sqelevator.Elevator.DoorStatus;
 import sqelevator.IElevator;
+import at.fhhagenberg.sqelevator.Elevator.Direction;
 
 import java.io.FileInputStream;
 import java.rmi.Naming;
@@ -202,46 +204,71 @@ public class ElevatorAlgorithm implements MqttCallback {
             System.out.println( "Topic1: " + topicParts[1]);
             System.out.println( "Topic2: " + topicParts[2]);
 
+            if (topicParts[0].equals("elevator")) {
+                int elevatorIndex = index; // Index for elevatorList
+                Elevator elevator = elevatorList.get(elevatorIndex);
 
-            //elevator/button/elevIDX
-            //elevator/state/elevIDX
-            //floor/button/floorIDX
-            //TODO Add other ways to adapt Datamodel data
-            if(topicParts[0].equals("elevator")){
-                if(topicParts[1].equals("state")){
-                    
-                } else if (topicParts[1].equals("button")) {
-                    elevatorList.get(index).pressedButtons.set(value, true);
-                    //TODO RESET IF ELEVATOR REACHES THIS FLOOR
+                switch (topicParts[1]) {
+                    case "position":
+                        elevator.setCurrentFloor(value);
+                        // TODO: Additional logic for elevator position
+                        break;
+                    case "committedDirection":
+                        elevator.setDirection(Direction.values()[value]);
+                        // TODO: Additional logic for committed direction
+                        break;
+                    case "acceleration":
+                        elevator.setSpeed(value);
+                        // TODO: Additional logic for elevator acceleration
+                        break;
+                    case "doorStatus":
+                        elevator.setDoorStatus(DoorStatus.values()[value]);
+                        // TODO: Additional logic for elevator door status
+                        break;
+                    case "currentFloor":
+                        elevator.setCurrentFloor(value);
+                        // TODO: Additional logic for current floor
+                        break;
+                    case "speed":
+                        elevator.setSpeed(value);
+                        // TODO: Additional logic for elevator speed
+                        break;
+                    case "weight":
+                        elevator.setWeight(value);
+                        // TODO: Additional logic for elevator weight
+                        break;
+                    case "capacity":
+                        elevator.setMaxWeightCapacity(value);
+                        // TODO: Additional logic for elevator capacity
+                        break;
+                    case "target":
+                        elevator.setTargetFloor(value);
+                        // TODO: Additional logic for elevator target floor
+                        break;
+                    case "button":
+                        elevatorList.get(index).pressedButtons.set(value, true);
+                        break;
+                    default:
+                        // Handle unknown topicParts[1]
+                        break;
                 }
             } else if (topicParts[0].equals("floor")) {
-                floorList.set(index, true);
+                int floorIndex = index; // Index for floorList
 
-                //TODO Put this shit into a update function that just updates elevator controls
-//                int elevatorToGo = this.calculateElevator(index, value);
-//                System.out.println("elevator/control/" + elevatorToGo + "\n" + "setTarget:" + index);
-//                elevatorList.get(elevatorToGo).move();
-//                this.moveElevator(elevatorToGo, index);
+                switch (topicParts[1]) {
+                    case "button":
+                        floorList.set(index, true);
+                        //TODO Put this shit into a update function that just updates elevator controls
+            // //                int elevatorToGo = this.calculateElevator(index, value);
+            // //                System.out.println("elevator/control/" + elevatorToGo + "\n" + "setTarget:" + index);
+            // //                elevatorList.get(elevatorToGo).move();
+            // //                this.moveElevator(elevatorToGo, index);
+                        break;
+                    default:
+                        // Handle unknown topicParts[1]
+                        break;
+                }
             }
-
-
-//            switch (topicPart) {
-//                case "setTarget":
-//                    this.elevator.setTarget(elevatorID, value);
-//                    break;
-//                case "setServicesFloors":
-//                    // Assuming the second part is the floor number
-//                    // The actual method call might differ based on your elevator API
-//                    this.elevator.setServicesFloors(elevatorID, value, true);
-//                    break;
-//                case "setCommittedDirection":
-//                    // Assuming value corresponds to the direction (e.g., 0 for up, 1 for down)
-//                    this.elevator.setCommittedDirection(elevatorID, value);
-//                    break;
-//                default:
-//                    System.out.println("Unknown command: " + command);
-//                    break;
-//            }
         }
 
 
