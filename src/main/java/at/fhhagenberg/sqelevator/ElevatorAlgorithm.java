@@ -63,8 +63,10 @@ public class ElevatorAlgorithm implements MqttCallback {
 
         private void moveElevator(int elevatorIndex, int floorIdx, Direction dir){
             this.publishMessage("elevator/control/" + elevatorIndex,"setCommittedDirection:" + dir.ordinal());
+            elevatorList.get(elevatorIndex).setDirection(dir);
             if (dir != Direction.ELEVATOR_DIRECTION_UNCOMMITTED) {
                 this.publishMessage("elevator/control/" + elevatorIndex,"setTarget:" + floorIdx);
+                elevatorList.get(elevatorIndex).setTargetFloor(floorIdx);
             }
         }
 

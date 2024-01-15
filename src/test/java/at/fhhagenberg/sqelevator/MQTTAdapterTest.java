@@ -87,7 +87,7 @@ public class MQTTAdapterTest {
         // Create a CountDownLatch with a count of 1
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<AssertionError> assertionError = new AtomicReference<>();
-        String mqttMsg = "";
+
         BiConsumer<String, String> messageCallback = (topic, message) -> {
             try {
                 // Your custom logic for handling the arrived message
