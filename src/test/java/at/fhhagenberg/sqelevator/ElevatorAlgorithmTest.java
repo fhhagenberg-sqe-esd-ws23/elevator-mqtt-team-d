@@ -107,7 +107,7 @@ public class ElevatorAlgorithmTest {
 
         // Create Handler to imitate Adapter and RMI Commands
         MqttHandler adapderMock = new MqttHandler(elevatorProps.getProperty("mqtt.broker.url"), "client1", messageCallback);
-        //adapderMock.subscribeToTopic("elevator/control/+");
+        adapderMock.subscribeToTopic("elevator/control/+");
 
         // Send message for floor buttonup pressed on floor 2
         adapderMock.publishOnTopic("floor/buttonup/2", "1");
