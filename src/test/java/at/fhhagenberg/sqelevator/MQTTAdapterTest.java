@@ -55,7 +55,7 @@ public class MQTTAdapterTest {
             // Adding floors to the data model
             int numFloors = Integer.parseInt(elevatorProps.getProperty("numFloors"));
             for (int i = 0; i < numFloors; i++) {
-                elevatorManager.floors.add(new Floor(i + 1)); // Floor numbering starts from 1
+                elevatorManager.floors.add(new Floor(i)); // Floor numbering starts from 1
             }
 
             // Adding elevators to the data model
@@ -115,12 +115,11 @@ public class MQTTAdapterTest {
             throw assertionError.get();
         }
         System.out.println("End of Test!");
+        tearDown();
     }
 
     @Test
     public void testSetTarget() throws MqttException, InterruptedException {
-
-
         //TODO check if default values are valid
         int currTarget;
         try {
@@ -142,39 +141,68 @@ public class MQTTAdapterTest {
             try {
                 // Your custom logic for handling the arrived message
                 System.out.println("Received message: " + message);
-
-                //assertEquals(message, "5");
                 // Count down the latch to unblock the test
-                latch.countDown();
-
+                if(topic.equals("elevator/target/2") && message.equals("3") ||
+                        topic.equals("elevator/target/0") && message.equals("3"))
+                {
+                    latch.countDown();
+                }
             } catch (AssertionError e) {
                 assertionError.set(e);
             }
         };
         // Create Imitation of Algorithm to set elevators to floors
         MqttHandler algoMock = new MqttHandler(elevatorProps.getProperty("mqtt.broker.url"), "client1", messageCallback);
+        algoMock.subscribeToTopic("elevator/target/+");
 
         // Set Elevator 0 to Target 5
-        algoMock.publishOnTopic("elevator/control/1", "setTarget:5");
-        algoMock.publishOnTopic("elevator/control/2", "setTarget:4");
-        algoMock.publishOnTopic("elevator/control/3", "setTarget:3");
+        algoMock.publishOnTopic("elevator/control/0", "setTarget:5");
+        algoMock.publishOnTopic("elevator/control/1", "setTarget:4");
+        algoMock.publishOnTopic("elevator/control/2", "setTarget:3");
+
+        if (!latch.await(3, TimeUnit.SECONDS)) {
+            // If the latch is not counted down within the timeout, fail the test
+            throw new AssertionError("Timeout waiting for message arrival");
+        }
+        if (assertionError.get() != null) {
+            throw assertionError.get();
+        }
 
         try {
-
-            currTarget = elevatorManager.getTarget(1);
+            currTarget = elevatorManager.getTarget(0);
             assertEquals(5, currTarget);
-            currTarget = elevatorManager.getTarget(2);
+            currTarget = elevatorManager.getTarget(1);
             assertEquals(4, currTarget);
-            //currTarget = elevatorManager.getTarget();
-            //assertEquals(3, currTarget);
+            currTarget = elevatorManager.getTarget(2);
+            assertEquals(3, currTarget);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
 
+        // Set Elevators
+        algoMock.publishOnTopic("elevator/control/2", "setTarget:5");
+        algoMock.publishOnTopic("elevator/control/1", "setTarget:4");
+        algoMock.publishOnTopic("elevator/control/0", "setTarget:3");
+        Thread.sleep(200);
+        if (!latch.await(3, TimeUnit.SECONDS)) {
+            // If the latch is not counted down within the timeout, fail the test
+            throw new AssertionError("Timeout waiting for message arrival");
+        }
+        try {
+            currTarget = elevatorManager.getTarget(2);
+            assertEquals(5, currTarget);
+            currTarget = elevatorManager.getTarget(1);
+            assertEquals(4, currTarget);
+            currTarget = elevatorManager.getTarget(0);
+            assertEquals(3, currTarget);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+        tearDown();
     }
 
     @AfterAll
     public static void tearDown() throws MqttException {
-
+        elevatorManager.reset();
     }
 }

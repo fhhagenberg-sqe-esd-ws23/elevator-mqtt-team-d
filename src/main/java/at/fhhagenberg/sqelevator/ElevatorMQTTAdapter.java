@@ -109,7 +109,6 @@ import java.util.TimerTask;
                     if(this.elevator.getFloorButtonUp(i))
                     {
                         publishMessage("floor/buttonup/" + i, "1");
-                        //TODO RESET IF ELEVATOR REACHES THIS FLOOR
                     }
                     if(this.elevator.getFloorButtonDown(i)){
                         publishMessage("floor/buttondown/" + i, "1");
