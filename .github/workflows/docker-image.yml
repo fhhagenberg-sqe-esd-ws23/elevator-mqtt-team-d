@@ -1,0 +1,18 @@
+name: Deploy HiveMQ
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  deploy-hivemq:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Pull and Run HiveMQ
+      run: |
+        docker pull hivemq/hivemq4:latest
+        docker run -d -p 1883:1883 hivemq/hivemq4:latest
