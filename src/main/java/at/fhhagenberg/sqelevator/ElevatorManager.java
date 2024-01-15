@@ -2,9 +2,12 @@ package at.fhhagenberg.sqelevator;
 
 import sqelevator.IElevator;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Class to manage elevators and populate the data model. Implements the IElevator interface.
@@ -26,14 +29,31 @@ public class ElevatorManager implements IElevator {
      */
     private int floorHeight;
 
+    private Properties elevatorProps;
+
     /**
      * Constructor to initialize an ElevatorManager object with empty elevator and floor lists.
      */
     public ElevatorManager() {
         elevators = new ArrayList<>();
         floors = new ArrayList<>();
-    }
+        // Get properties
+        String rootPath = System.getProperty("user.dir");
+        String appConfigPath = rootPath + "/properties/IElevator.properties";
 
+        elevatorProps = new Properties();
+        try {
+            elevatorProps.load(new FileInputStream(appConfigPath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void reset(){
+        int size = elevators.size();
+        elevators.clear();
+        floors.clear();
+        addElevators(size);
+    }
     /**
      * Adds a specified number of elevators to the data model.
      *
@@ -41,7 +61,7 @@ public class ElevatorManager implements IElevator {
      */
     public void addElevators(int num) {
         for (int i = 0; i < num; i++) {
-            elevators.add(new Elevator(1, 500, 10)); // Assuming default values for elevator ID and maximum weight capacity
+            elevators.add(new Elevator(i, 500, Integer.parseInt(elevatorProps.getProperty("numFloors")))); // Assuming default values for elevator ID and maximum weight capacity
         }
     }
 
