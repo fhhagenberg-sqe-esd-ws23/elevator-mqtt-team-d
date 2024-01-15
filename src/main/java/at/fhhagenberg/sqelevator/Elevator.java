@@ -43,14 +43,13 @@ public class Elevator {
      * Enum defining the status of the elevator doors (OPEN, CLOSED).
      */
     public enum DoorStatus {
-        /**
-         * Represents the open state of the elevator doors.
-         */
-        ELEVATOR_DOORS_OPEN,
-        /**
-         * Represents the closed state of the elevator doors.
-         */
-        ELEVATOR_DOORS_CLOSED
+        ELEVATOR_DOORS_OPEN,	
+        /** State variable for elevator doors closed. */
+        ELEVATOR_DOORS_CLOSED,
+        /** State variable for elevator doors opening. */
+        ELEVATOR_DOORS_OPENING,
+        /** State variable for elevator doors closing. */
+        ELEVATOR_DOORS_CLOSING;
     }
 
     /**

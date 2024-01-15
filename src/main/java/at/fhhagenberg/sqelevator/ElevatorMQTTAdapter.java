@@ -11,7 +11,6 @@ import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 
 import sqelevator.IElevator;
 
-import java.io.FileInputStream;
 import java.rmi.Naming;
 import java.util.Properties;
 import java.util.Timer;
@@ -56,10 +55,9 @@ import java.util.TimerTask;
         private void pollElevatorState() {
             try {
                 // Assuming elevatorNumber is defined in your class
-                int elevatorNumber = 0;  // Example elevator number
-                for (int i = 0; i < Integer.parseInt(properties.getProperty("numElevators")); i++)
+                for (int elevatorNumber = 0; elevatorNumber < Integer.parseInt(properties.getProperty("numElevators")); elevatorNumber++)
                 {
-
+                   System.out.println("Door Status: " + this.elevator.getElevatorDoorStatus(elevatorNumber) + " elevator nr:" + elevatorNumber); 
                    // Publish elevator's position
                    int elevatorPosition = this.elevator.getElevatorPosition(elevatorNumber);
                    publishMessage("elevator/position/" + elevatorNumber, String.valueOf(elevatorPosition));
@@ -93,16 +91,16 @@ import java.util.TimerTask;
                    publishMessage("elevator/capacity/" + elevatorNumber, String.valueOf(elevatorCapacity));
 
                     // Publish elevator's target floor
-                    int targetFloor = this.elevator.getTarget(i);
-                    publishMessage("elevator/target/" + i, String.valueOf(targetFloor));
+                    int targetFloor = this.elevator.getTarget(elevatorNumber);
+                    publishMessage("elevator/target/" + elevatorNumber, String.valueOf(targetFloor));
 
 
                     // Publish pressed buttons of elevator
                     for(int j = 0 ; j < Integer.parseInt(properties.getProperty("numFloors")); j++)
                     {
-                        if (this.elevator.getElevatorButton(i, j))
+                        if (this.elevator.getElevatorButton(elevatorNumber, j))
                         {
-                            publishMessage("elevator/button/" + i, String.valueOf(j));// Publish elevator's target floor
+                            publishMessage("elevator/button/" + elevatorNumber, String.valueOf(j));// Publish elevator's target floor
                         }
                     }
                 }
@@ -209,7 +207,7 @@ import java.util.TimerTask;
             switch (command) {
                 case "setTarget":
                     this.elevator.setTarget(elevatorID, value);
-                    System.out.println("Target:    " +  value + " | elev: " + elevatorID);
+                    //System.out.println("Target:    " +  value + " | elev: " + elevatorID);
                     break;
                 case "setServicesFloors":
                     // Assuming the second part is the floor number
@@ -219,7 +217,7 @@ import java.util.TimerTask;
                 case "setCommittedDirection":
                     // Assuming value corresponds to the direction (e.g., 0 for up, 1 for down)
                     this.elevator.setCommittedDirection(elevatorID, value);
-                    System.out.println("Direction: "+ value + " | elev: " + elevatorID);
+                   // System.out.println("Direction: "+ value + " | elev: " + elevatorID);
                     break;
                 default:
                     System.out.println("Unknown command: " + command);

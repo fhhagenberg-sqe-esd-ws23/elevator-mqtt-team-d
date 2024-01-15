@@ -37,8 +37,6 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-
-
         elevatorMQTTAdapter.handle();
         elevatorAlgo.handle();
         System.out.println("Hello, World!");
