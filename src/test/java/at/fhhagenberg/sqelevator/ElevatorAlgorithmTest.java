@@ -91,18 +91,12 @@ public class ElevatorAlgorithmTest {
         // Create a CountDownLatch with a count of 1
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<AssertionError> assertionError = new AtomicReference<>();
-        Boolean test = false;
-        String mqttMsg = "";
+
         BiConsumer<String, String> messageCallback = (topic, message) -> {
             try {
                 // Your custom logic for handling the arrived message
                 System.out.println("Received message: " + message);
 
-                if(message.equals("setCommittedDirection:0"))
-                {
-
-                }
-                //assertEquals(message, "setTarget:2");
                 // Count down the latch to unblock the test
                 latch.countDown();
 
@@ -112,18 +106,11 @@ public class ElevatorAlgorithmTest {
         };
 
         // Create Handler to imitate Adapter and RMI Commands
-        //
         MqttHandler adapderMock = new MqttHandler(elevatorProps.getProperty("mqtt.broker.url"), "client1", messageCallback);
-        adapderMock.subscribeToTopic("elevator/control/+");
+        //adapderMock.subscribeToTopic("elevator/control/+");
 
-
-        adapderMock.publishOnTopic("floor/button/2", "1");
-        adapderMock.publishOnTopic("floor/button/5", "1");
-        adapderMock.publishOnTopic("floor/button/4", "1");
-
-        adapderMock.publishOnTopic("floor/button/2", "1");
-        adapderMock.publishOnTopic("floor/button/7", "1");
-
+        // Send message for floor buttonup pressed on floor 2
+        adapderMock.publishOnTopic("floor/buttonup/2", "1");
 
         if (!latch.await(3, TimeUnit.SECONDS)) {
             // If the latch is not counted down within the timeout, fail the test
@@ -133,7 +120,9 @@ public class ElevatorAlgorithmTest {
             throw assertionError.get();
         }
 
-        assertEquals(true, elevatorAlgo.floorList.get(2));
+        assertEquals(true, elevatorAlgo.floorListUp.get(2));
+
+        assertEquals(Elevator.Direction.ELEVATOR_DIRECTION_UP, elevatorAlgo.elevatorList.get(0).getDirection());
 
         System.out.println("End of Test!");
     }
