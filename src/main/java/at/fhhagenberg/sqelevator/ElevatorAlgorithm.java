@@ -64,6 +64,75 @@ public class ElevatorAlgorithm implements MqttCallback {
             }
         }
 
+        ///////////////////////
+        private void moveElevator2(int elevatorIndex, int floorIdx, Direction dir){
+            this.publishMessage("elevator/control/" + elevatorIndex,"setCommittedDirection:" + dir.ordinal());
+            if (dir != Direction.ELEVATOR_DIRECTION_UNCOMMITTED) {
+                this.publishMessage("elevator/control/" + elevatorIndex,"setTarget:" + floorIdx);
+            }
+        }
+        ///////////////////7
+        private void findNextTarget(int elevatorIndex) {
+            int numFloors = floorList.size();
+            Elevator ele = (elevatorList.get(elevatorIndex));
+            Direction dir = ele.getDirection();
+            int currentFloor = ele.getCurrentFloor();
+
+            if(ele.getSpeed() != 0){
+                moveElevator2(elevatorIndex, elevatorList.get(elevatorIndex).getTargetFloor(), dir);
+                return ;
+            }
+            
+            ele.pressedButtons.set(currentFloor, false);
+            floorList.set(elevatorIndex, false);
+
+            if(dir == Direction.ELEVATOR_DIRECTION_UP){
+                for(int i  = currentFloor; i <= numFloors; i++){
+                    if(floorList.get(i) || ele.pressedButtons.get(i)){
+                        moveElevator2(i, elevatorList.get(elevatorIndex).getTargetFloor(), dir);
+                    }
+                }
+                for(int i  = currentFloor; i >= 0 ; i--){
+                    if(floorList.get(i) || ele.pressedButtons.get(i)){
+                        moveElevator2(i, elevatorList.get(elevatorIndex).getTargetFloor(), Direction.ELEVATOR_DIRECTION_DOWN);
+                    }
+                }
+                moveElevator2(currentFloor, elevatorList.get(elevatorIndex).getTargetFloor(), Direction.ELEVATOR_DIRECTION_UNCOMMITTED);
+            }
+            else if (dir == Direction.ELEVATOR_DIRECTION_DOWN) {
+                for(int i  = currentFloor; i >= 0 ; i--){
+                    if(floorList.get(i) || ele.pressedButtons.get(i)){
+                        moveElevator2(i, elevatorList.get(elevatorIndex).getTargetFloor(), dir);
+
+                    }
+                }
+                for(int i  = currentFloor; i <= numFloors; i++){
+                    if(floorList.get(i) || ele.pressedButtons.get(i)){
+                        moveElevator2(i, elevatorList.get(elevatorIndex).getTargetFloor(), Direction.ELEVATOR_DIRECTION_UP);
+
+                    }
+                }
+                moveElevator2(currentFloor, elevatorList.get(elevatorIndex).getTargetFloor(), Direction.ELEVATOR_DIRECTION_UNCOMMITTED);
+
+            }
+            else if (dir == Direction.ELEVATOR_DIRECTION_UNCOMMITTED) {
+                int minDistance = Integer.MAX_VALUE;
+                int closestTrueIndex = currentFloor;;
+                for (int i = 0; i < ele.pressedButtons.size(); i++) {
+                    if (ele.pressedButtons.get(i) && floorList.contains(i)) {
+                        int distance = Math.abs(currentFloor - i);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestTrueIndex = i;
+                        }
+                    }
+                }
+                if(closestTrueIndex != currentFloor){
+                    moveElevator2(closestTrueIndex, elevatorList.get(elevatorIndex).getTargetFloor(), closestTrueIndex > currentFloor ? Direction.ELEVATOR_DIRECTION_UP:Direction.ELEVATOR_DIRECTION_DOWN);
+                }
+            }
+        }
+
         private int calculateElevator(int floorIdx) {
             //TODO
             System.out.println("calculating...");
@@ -133,18 +202,21 @@ public class ElevatorAlgorithm implements MqttCallback {
 
         private void algo()
         {
-            //System.out.println("Running algo...."+  floorList.size());
-            for(int i = 0; i < floorList.size(); i++)
-            {
-                //System.out.println("FOR....");
-                if(floorList.get(i))
-                {
-                    System.out.println("Floor Update");
-                    moveElevator(calculateElevator(i), i);
-                    updateDataSet();
-                    floorList.set(i, false);
-                }
+            for (Elevator elevator : elevatorList) {
+                findNextTarget(elevator.getElevatorNumber());
             }
+            //System.out.println("Running algo...."+  floorList.size());
+            // for(int i = 0; i < floorList.size(); i++)
+            // {
+            //     //System.out.println("FOR....");
+            //     if(floorList.get(i))
+            //     {
+            //         System.out.println("Floor Update");
+            //         moveElevator(calculateElevator(i), i);
+            //         updateDataSet();
+            //         floorList.set(i, false);
+            //     }
+            // }
             //MqttSubscription[] subs = {new MqttSubscription(this.properties.getProperty("elevator.state.topic"),2)};
 
         }
