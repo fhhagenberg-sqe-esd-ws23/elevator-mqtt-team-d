@@ -100,24 +100,21 @@ import java.util.TimerTask;
                     // Publish pressed buttons of elevator
                     for(int j = 0 ; j < Integer.parseInt(properties.getProperty("numFloors")); j++)
                     {
-
                         if (this.elevator.getElevatorButton(i, j))
                         {
                             publishMessage("elevator/button/" + i, String.valueOf(j));// Publish elevator's target floor
                         }
-
                     }
-
                 }
                 for(int i = 0; i < Integer.parseInt(properties.getProperty("numFloors")); i++)
                 {
-                    if(this.elevator.getFloorButtonUp(i) || this.elevator.getFloorButtonDown(i))
+                    if(this.elevator.getFloorButtonUp(i))
                     {
-                        publishMessage("floor/button/" + i, "1");
+                        publishMessage("floor/buttonup/" + i, "1");
                         //TODO RESET IF ELEVATOR REACHES THIS FLOOR
                     }
-                    else {
-                        //publishMessage("floor/button/" + i, "0");
+                    if(this.elevator.getFloorButtonDown(i)){
+                        publishMessage("floor/buttondown/" + i, "1");
                     }
                 }
 
@@ -181,10 +178,10 @@ import java.util.TimerTask;
 
         @Override
         public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-            System.out.println("Message Arrived at Adapter:");
+            //System.out.println("Message Arrived at Adapter:");
             String message = mqttMessage.toString();
-            System.out.println(message);
-            System.out.println(topic);
+            //System.out.println(message);
+            //System.out.println(topic);
 
 
             /***********prepare command, elevatorID and value************/
@@ -204,15 +201,15 @@ import java.util.TimerTask;
             String command = commandParts[0];
             int value = Integer.parseInt(commandParts[1]);
 
-            System.out.println("Command: " + command);
-            System.out.println("ElevatorID: " + elevatorID);
-            System.out.println( "Value: " + value);
+            //System.out.println("Command: " + command);
+            //System.out.println("ElevatorID: " + elevatorID);
+            //System.out.println( "Value: " + value);
 
 
             switch (command) {
                 case "setTarget":
                     this.elevator.setTarget(elevatorID, value);
-                    System.out.println("Target set!");
+                    System.out.println("Target:    " +  value + " | elev: " + elevatorID);
                     break;
                 case "setServicesFloors":
                     // Assuming the second part is the floor number
@@ -222,7 +219,7 @@ import java.util.TimerTask;
                 case "setCommittedDirection":
                     // Assuming value corresponds to the direction (e.g., 0 for up, 1 for down)
                     this.elevator.setCommittedDirection(elevatorID, value);
-                    System.out.println("Direction Updated");
+                    System.out.println("Direction: "+ value + " | elev: " + elevatorID);
                     break;
                 default:
                     System.out.println("Unknown command: " + command);

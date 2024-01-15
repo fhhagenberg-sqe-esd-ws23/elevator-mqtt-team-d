@@ -1,9 +1,6 @@
 package at.fhhagenberg.sqelevator;
 
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents an elevator with properties and methods for controlling its behavior.
@@ -21,7 +18,8 @@ public class Elevator {
     private boolean isMoving;
     private boolean isDoorOpen;
 
-    public List<Boolean> pressedButtons;
+    public List<Boolean> pressedButtonsUp;
+    public List<Boolean> pressedButtonsDown;
 
 
     /**
@@ -66,13 +64,15 @@ public class Elevator {
         this.elevatorNumber = elevatorNumber;
         this.maxWeightCapacity = maxWeightCapacity;
         this.serviceFloors = new HashSet<>();
-        this.pressedButtons = new ArrayList<>(numOfFloors);
+        this.pressedButtonsUp = new ArrayList<>(Collections.nCopies(numOfFloors, false));
+        this.pressedButtonsDown = new ArrayList<>(Collections.nCopies(numOfFloors, false));
+
         currentFloor = 0;
         direction = Direction.ELEVATOR_DIRECTION_UNCOMMITTED;
         doorStatus = DoorStatus.ELEVATOR_DOORS_CLOSED;
         weight = 0;
         speed = 0;
-        targetFloor = -1;
+        targetFloor = 0;
         isMoving = false;
         isDoorOpen = false;
     }
