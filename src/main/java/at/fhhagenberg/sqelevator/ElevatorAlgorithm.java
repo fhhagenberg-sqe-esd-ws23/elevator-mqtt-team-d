@@ -19,12 +19,12 @@ import java.util.*;
 
 
 public class ElevatorAlgorithm implements MqttCallback {
-        private IElevator elevator;
-        private MqttClient mqttClient;
-        private Properties properties;
+    private IElevator elevator;
+    private MqttClient mqttClient;
+    private Properties properties;
 
-        private static List<Elevator> elevatorList;
-    private static List<Boolean> floorList;
+    public static List<Elevator> elevatorList;
+    public static List<Boolean> floorList;
 
 
     private static int MAXWEIGHT = 500;
@@ -43,12 +43,13 @@ public class ElevatorAlgorithm implements MqttCallback {
                 // Subscribe to the topic for setting elevator parameters
                 MqttSubscription[] subs = {new MqttSubscription(this.properties.getProperty("elevator.state.topic"),2),
                         new MqttSubscription(this.properties.getProperty("elevator.button.topic"),2),
-                        new MqttSubscription(this.properties.getProperty("floor.button.topic"),2) };
+                        new MqttSubscription(this.properties.getProperty("floor.button.topic"),2),
+                        new MqttSubscription("elevator/+/+",2)};
 
                 int numOfElevators = Integer.parseInt(this.properties.getProperty("numElevators"));
                 int numOfFloors = Integer.parseInt(this.properties.getProperty("numFloors"));
                 elevatorList = new ArrayList<>(numOfElevators);
-                floorList  = new ArrayList<>(numOfFloors);
+                floorList  = new ArrayList<>(Collections.nCopies(numOfFloors, false));
                 for(int i = 0; i <  numOfElevators; i++){
                     elevatorList.add(new Elevator(i, MAXWEIGHT,Integer.parseInt(this.properties.getProperty("numFloors")) ));
                 }
@@ -63,7 +64,7 @@ public class ElevatorAlgorithm implements MqttCallback {
             }
         }
 
-        private int calculateElevator(int floorIdx, int buttonPressed) {
+        private int calculateElevator(int floorIdx) {
             //TODO
             System.out.println("calculating...");
             int selectedElevator = -1;
@@ -104,24 +105,51 @@ public class ElevatorAlgorithm implements MqttCallback {
         }
 
         public void moveElevator(int elevatorIdx, int floor){
-            System.out.println("moving...");
-
             Elevator.Direction direction = Elevator.Direction.ELEVATOR_DIRECTION_UNCOMMITTED;
             if(elevatorList.get(elevatorIdx).getCurrentFloor() > floor){
                 direction = Elevator.Direction.ELEVATOR_DIRECTION_DOWN;
+                elevatorList.get(elevatorIdx).setDirection(Elevator.Direction.ELEVATOR_DIRECTION_DOWN);
             }
             else if (elevatorList.get(elevatorIdx).getCurrentFloor() < floor){
                 direction = Elevator.Direction.ELEVATOR_DIRECTION_UP;
+                elevatorList.get(elevatorIdx).setDirection(Elevator.Direction.ELEVATOR_DIRECTION_UP);
             }
+            System.out.println("Moving elev:" + elevatorIdx +  "--> " + floor);
             this.publishMessage("elevator/control/" + elevatorIdx,"setTarget:" + floor);
             this.publishMessage("elevator/control/" + elevatorIdx,"setCommittedDirection:" + direction.ordinal());
         }
 
-        public void pollElevatorState()
+        private void updateDataSet()
         {
-            MqttSubscription[] subs = {new MqttSubscription(this.properties.getProperty("elevator.state.topic"),2)};
+
+            for(int i = 0; i < elevatorList.size(); i++){
+                //elevatorList.get(i).pressedButtons.set(false);
+                if(elevatorList.get(i).getSpeed() == 0)
+                {
+                    elevatorList.get(i).setDirection(Direction.ELEVATOR_DIRECTION_UNCOMMITTED);
+                }
+            }
+        }
+
+        private void algo()
+        {
+            //System.out.println("Running algo...."+  floorList.size());
+            for(int i = 0; i < floorList.size(); i++)
+            {
+                //System.out.println("FOR....");
+                if(floorList.get(i))
+                {
+                    System.out.println("Floor Update");
+                    moveElevator(calculateElevator(i), i);
+                    updateDataSet();
+                    floorList.set(i, false);
+                }
+            }
+            //MqttSubscription[] subs = {new MqttSubscription(this.properties.getProperty("elevator.state.topic"),2)};
 
         }
+
+
 
         public void handle() {
 
@@ -131,7 +159,8 @@ public class ElevatorAlgorithm implements MqttCallback {
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    pollElevatorState();
+
+                    algo();
                 }
             }, 0, pollingInterval);
 
@@ -175,10 +204,10 @@ public class ElevatorAlgorithm implements MqttCallback {
 
         @Override
         public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-            System.out.println("Message Arrived at Algo:");
+            //System.out.println("Message Arrived at Algo:");
             String message = mqttMessage.toString();
-            System.out.println(message);
-            System.out.println(topic);
+            //System.out.println(message);
+            //System.out.println(topic);
 
 
             /***********prepare command, elevatorID and value************/
@@ -187,68 +216,87 @@ public class ElevatorAlgorithm implements MqttCallback {
             if (topicParts.length != 3) {
                 throw new IllegalArgumentException("Invalid message format");
             }
-            System.out.println("topic");
+
             String elevatorIDstring = topicParts[2];
             int index = Integer.parseInt(elevatorIDstring);
             String topicPart = topicParts[1];
 
 
-            System.out.println("topic2");
+
             int value = Integer.parseInt(message);
 
-            //System.out.println("Command: " + command);
-            System.out.println("ElevatorID: " + index);
-            System.out.println( "Value: " + value);
 
-            System.out.println( "Topic0: " + topicParts[0]);
-            System.out.println( "Topic1: " + topicParts[1]);
-            System.out.println( "Topic2: " + topicParts[2]);
+
+//            System.out.println( "Topic0: " + topicParts[0]);
+//            System.out.println( "Topic1: " + topicParts[1]);
+//            System.out.println( "Topic2: " + topicParts[2]);
 
             if (topicParts[0].equals("elevator")) {
-                int elevatorIndex = index; // Index for elevatorList
-                Elevator elevator = elevatorList.get(elevatorIndex);
+                Elevator elevator = elevatorList.get(index);
+                //System.out.println("Command: " + command);
+                //System.out.println("ElevatorIdx: " + index);
+                //System.out.println( "Msg: " + value);
 
                 switch (topicParts[1]) {
                     case "position":
+                        System.out.println("Position of Elev:" +  index + " is " + value);
+
                         elevator.setCurrentFloor(value);
                         // TODO: Additional logic for elevator position
                         break;
                     case "committedDirection":
+                        System.out.println("Direction of Elev:" +  index + " is " + value);
+
                         elevator.setDirection(Direction.values()[value]);
                         // TODO: Additional logic for committed direction
                         break;
                     case "acceleration":
+                        System.out.println("Elev:" +  index + " acceleration: " + value);
+
                         elevator.setSpeed(value);
                         // TODO: Additional logic for elevator acceleration
                         break;
                     case "doorStatus":
+                        System.out.println("Elev:" +  index + " doorStatus: " + value);
+
                         elevator.setDoorStatus(DoorStatus.values()[value]);
                         // TODO: Additional logic for elevator door status
                         break;
                     case "currentFloor":
+                        System.out.println("Elev:" +  index + " in Floor " + value);
                         elevator.setCurrentFloor(value);
                         // TODO: Additional logic for current floor
                         break;
                     case "speed":
+                        System.out.println("Elev:" +  index + " speed: " + value);
+
                         elevator.setSpeed(value);
                         // TODO: Additional logic for elevator speed
                         break;
                     case "weight":
+                        System.out.println("Elev:" +  index + " weight: " + value);
+
                         elevator.setWeight(value);
                         // TODO: Additional logic for elevator weight
                         break;
                     case "capacity":
+                        System.out.println("Elev:" +  index + " capacity: " + value);
+
                         elevator.setMaxWeightCapacity(value);
                         // TODO: Additional logic for elevator capacity
                         break;
                     case "target":
+                        System.out.println("Elev:" +  index + " target: " + value);
+
                         elevator.setTargetFloor(value);
                         // TODO: Additional logic for elevator target floor
                         break;
                     case "button":
+                        System.out.println("Button pressed in Elev:" +  index + " Floor: " + value);
                         elevatorList.get(index).pressedButtons.set(value, true);
                         break;
                     default:
+                        System.out.println("-----------------------------------------------------------" + topic + message);
                         // Handle unknown topicParts[1]
                         break;
                 }
@@ -257,6 +305,7 @@ public class ElevatorAlgorithm implements MqttCallback {
 
                 switch (topicParts[1]) {
                     case "button":
+                        System.out.println("Button pressed on floor:" +  index);
                         floorList.set(index, true);
                         //TODO Put this shit into a update function that just updates elevator controls
             // //                int elevatorToGo = this.calculateElevator(index, value);
@@ -269,6 +318,7 @@ public class ElevatorAlgorithm implements MqttCallback {
                         break;
                 }
             }
+
         }
 
 

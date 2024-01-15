@@ -11,6 +11,7 @@ import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import sqelevator.IElevator;
 
 import java.rmi.Naming;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class MqttHandler implements MqttCallback {
@@ -18,10 +19,10 @@ public class MqttHandler implements MqttCallback {
     String serverURI;
     String clientID;
 
-    Consumer<String> messageArrivedCallback;
+    BiConsumer<String, String> messageArrivedCallback;
 
 
-    public MqttHandler(String serverURI, String clientID, Consumer<String> messageArrivedCallback) {
+    public MqttHandler(String serverURI, String clientID, BiConsumer<String, String> messageArrivedCallback) {
         this.serverURI = serverURI;
         this.clientID = clientID;
         this.messageArrivedCallback = messageArrivedCallback;
@@ -85,19 +86,19 @@ public class MqttHandler implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-        System.out.println("Message Arrived:" + mqttMessage.toString());
-        System.out.println("Handler Topic:" + topic);
+        //System.out.println("Message Arrived:" + mqttMessage.toString());
+        //System.out.println("Handler Topic:" + topic);
 
         // Call the callback function with the received message
         if (messageArrivedCallback != null) {
-            messageArrivedCallback.accept(mqttMessage.toString());
+            messageArrivedCallback.accept(topic, mqttMessage.toString());
         }
         this.updateConnections();
     }
 
     @Override
     public void deliveryComplete(IMqttToken iMqttToken) {
-        System.out.println("Delivery Complete");
+        //System.out.println("Handler Delivery Complete");
     }
 
     @Override

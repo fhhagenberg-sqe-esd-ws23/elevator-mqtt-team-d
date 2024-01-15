@@ -22,6 +22,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 
@@ -85,7 +86,7 @@ public class MQTTAdapterTest {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<AssertionError> assertionError = new AtomicReference<>();
         String mqttMsg = "";
-        Consumer<String> messageCallback = message -> {
+        BiConsumer<String, String> messageCallback = (topic, message) -> {
             try {
                 // Your custom logic for handling the arrived message
                 System.out.println("Received message: " + message);

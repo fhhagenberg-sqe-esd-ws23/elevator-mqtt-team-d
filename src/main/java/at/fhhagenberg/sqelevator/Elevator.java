@@ -72,7 +72,7 @@ public class Elevator {
         doorStatus = DoorStatus.ELEVATOR_DOORS_CLOSED;
         weight = 0;
         speed = 0;
-        targetFloor = 0;
+        targetFloor = -1;
         isMoving = false;
         isDoorOpen = false;
     }

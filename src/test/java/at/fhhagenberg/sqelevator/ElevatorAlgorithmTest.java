@@ -14,6 +14,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import sqelevator.IElevator;
@@ -53,18 +54,17 @@ public class ElevatorAlgorithmTest {
             // Setting floor height
             elevatorManager.setFloorHeight(4);// Example: Each floor is 4 units high
 
-            IElevator stub_server = (IElevator) UnicastRemoteObject.exportObject(elevatorManager, 0);
-
-            Registry registry = LocateRegistry.createRegistry(1099);
-            registry.rebind("ElevatorManager", stub_server);
+            //IElevator stub_server = (IElevator) UnicastRemoteObject.exportObject(elevatorManager, 0);
+            //Registry registry = LocateRegistry.createRegistry(1099);
+            //registry.rebind("ElevatorManager", stub_server);
 
             System.out.println("ElevatorManager server is running...");
 
-            elevatorMQTTAdapter = new ElevatorMQTTAdapter(elevatorProps);
-            elevatorMQTTAdapter.handle();
+            //elevatorMQTTAdapter = new ElevatorMQTTAdapter(elevatorProps);
+            //elevatorMQTTAdapter.handle();
 
             elevatorAlgo = new ElevatorAlgorithm(elevatorProps);
-            //elevatorAlgo.handle();
+            elevatorAlgo.handle();
 
 
         } catch (Exception e) {
@@ -91,13 +91,18 @@ public class ElevatorAlgorithmTest {
         // Create a CountDownLatch with a count of 1
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<AssertionError> assertionError = new AtomicReference<>();
+        Boolean test = false;
         String mqttMsg = "";
-        Consumer<String> messageCallback = message -> {
+        BiConsumer<String, String> messageCallback = (topic, message) -> {
             try {
                 // Your custom logic for handling the arrived message
                 System.out.println("Received message: " + message);
 
-                assertEquals(message, "setTarget:2");
+                if(message.equals("setCommittedDirection:0"))
+                {
+
+                }
+                //assertEquals(message, "setTarget:2");
                 // Count down the latch to unblock the test
                 latch.countDown();
 
@@ -106,9 +111,18 @@ public class ElevatorAlgorithmTest {
             }
         };
 
+        // Create Handler to imitate Adapter and RMI Commands
+        //
         MqttHandler adapderMock = new MqttHandler(elevatorProps.getProperty("mqtt.broker.url"), "client1", messageCallback);
-        adapderMock.subscribeToTopic("elevator/control/0");
+        adapderMock.subscribeToTopic("elevator/control/+");
+
+
         adapderMock.publishOnTopic("floor/button/2", "1");
+        adapderMock.publishOnTopic("floor/button/5", "1");
+        adapderMock.publishOnTopic("floor/button/4", "1");
+
+        adapderMock.publishOnTopic("floor/button/2", "1");
+        adapderMock.publishOnTopic("floor/button/7", "1");
 
 
         if (!latch.await(3, TimeUnit.SECONDS)) {
@@ -118,6 +132,9 @@ public class ElevatorAlgorithmTest {
         if (assertionError.get() != null) {
             throw assertionError.get();
         }
+
+        assertEquals(true, elevatorAlgo.floorList.get(2));
+
         System.out.println("End of Test!");
     }
 

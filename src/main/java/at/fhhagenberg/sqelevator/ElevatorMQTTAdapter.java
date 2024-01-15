@@ -40,7 +40,7 @@ import java.util.TimerTask;
                 // Subscribe to the topic for setting elevator parameters
                 MqttSubscription sub = new MqttSubscription("elevator/control/+",2);
                 MqttSubscription[] subs = {sub};
-                System.out.println("subscribeToTopic");
+
                 try{
                     mqttClient.subscribe(subs);
                 }catch (MqttException e){
@@ -100,7 +100,8 @@ import java.util.TimerTask;
                     // Publish pressed buttons of elevator
                     for(int j = 0 ; j < Integer.parseInt(properties.getProperty("numFloors")); j++)
                     {
-                        if (this.elevator.getElevatorButton(i, j));
+
+                        if (this.elevator.getElevatorButton(i, j))
                         {
                             publishMessage("elevator/button/" + i, String.valueOf(j));// Publish elevator's target floor
                         }
@@ -116,7 +117,7 @@ import java.util.TimerTask;
                         //TODO RESET IF ELEVATOR REACHES THIS FLOOR
                     }
                     else {
-                        publishMessage("floor/button/" + i, "0");
+                        //publishMessage("floor/button/" + i, "0");
                     }
                 }
 
@@ -211,6 +212,7 @@ import java.util.TimerTask;
             switch (command) {
                 case "setTarget":
                     this.elevator.setTarget(elevatorID, value);
+                    System.out.println("Target set!");
                     break;
                 case "setServicesFloors":
                     // Assuming the second part is the floor number
@@ -220,6 +222,7 @@ import java.util.TimerTask;
                 case "setCommittedDirection":
                     // Assuming value corresponds to the direction (e.g., 0 for up, 1 for down)
                     this.elevator.setCommittedDirection(elevatorID, value);
+                    System.out.println("Direction Updated");
                     break;
                 default:
                     System.out.println("Unknown command: " + command);
