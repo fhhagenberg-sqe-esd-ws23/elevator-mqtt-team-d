@@ -18,8 +18,7 @@ public class Elevator {
     private boolean isMoving;
     private boolean isDoorOpen;
 
-    public List<Boolean> pressedButtonsUp;
-    public List<Boolean> pressedButtonsDown;
+    public List<Boolean> pressedButtons;
 
 
     /**
@@ -64,9 +63,7 @@ public class Elevator {
         this.elevatorNumber = elevatorNumber;
         this.maxWeightCapacity = maxWeightCapacity;
         this.serviceFloors = new HashSet<>();
-        this.pressedButtonsUp = new ArrayList<>(Collections.nCopies(numOfFloors, false));
-        this.pressedButtonsDown = new ArrayList<>(Collections.nCopies(numOfFloors, false));
-
+        this.pressedButtons = new ArrayList<>(Collections.nCopies(numOfFloors, false));
         currentFloor = 0;
         direction = Direction.ELEVATOR_DIRECTION_UNCOMMITTED;
         doorStatus = DoorStatus.ELEVATOR_DOORS_CLOSED;

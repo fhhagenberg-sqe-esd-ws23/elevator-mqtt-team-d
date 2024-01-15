@@ -25,7 +25,9 @@ public class ElevatorAlgorithm implements MqttCallback {
     private Properties properties;
 
     public static List<Elevator> elevatorList;
-    public static List<Boolean> floorList;
+    public static List<Boolean> floorListUp;
+    public static List<Boolean> floorListDown;
+
 
 
     private static int MAXWEIGHT = 500;
@@ -44,13 +46,16 @@ public class ElevatorAlgorithm implements MqttCallback {
                 // Subscribe to the topic for setting elevator parameters
                 MqttSubscription[] subs = {new MqttSubscription(this.properties.getProperty("elevator.state.topic"),2),
                         new MqttSubscription(this.properties.getProperty("elevator.button.topic"),2),
-                        new MqttSubscription(this.properties.getProperty("floor.button.topic"),2),
+                        new MqttSubscription(this.properties.getProperty("floor.buttonup.topic"),2),
+                        new MqttSubscription(this.properties.getProperty("floor.buttondown.topic"),2),
                         new MqttSubscription("elevator/+/+",2)};
 
                 int numOfElevators = Integer.parseInt(this.properties.getProperty("numElevators"));
                 int numOfFloors = Integer.parseInt(this.properties.getProperty("numFloors"));
                 elevatorList = new ArrayList<>(numOfElevators);
-                floorList  = new ArrayList<>(Collections.nCopies(numOfFloors, false));
+                floorListUp  = new ArrayList<>(Collections.nCopies(numOfFloors, false));
+                floorListDown  = new ArrayList<>(Collections.nCopies(numOfFloors, false));
+
                 for(int i = 0; i <  numOfElevators; i++){
                     elevatorList.add(new Elevator(i, MAXWEIGHT,Integer.parseInt(this.properties.getProperty("numFloors")) ));
                 }
@@ -74,7 +79,7 @@ public class ElevatorAlgorithm implements MqttCallback {
         }
         ///////////////////7
         private void findNextTarget(int elevatorIndex) {
-            int numFloors = floorList.size();
+            int numFloors = floorListUp.size();
             Elevator ele = (elevatorList.get(elevatorIndex));
             Direction dir = ele.getDirection();
             int currentFloor = ele.getCurrentFloor();
@@ -85,20 +90,19 @@ public class ElevatorAlgorithm implements MqttCallback {
             }
 
 
-            floorList.set(elevatorIndex, false);
-
+            ele.pressedButtons.set(currentFloor, false);
 
             //System.out.println("Finding next Targett--------------------------------------------");
             if(dir == Direction.ELEVATOR_DIRECTION_UP){
-                ele.pressedButtonsUp.set(currentFloor, false);
+                floorListUp.set(currentFloor, false);
                 for(int i  = currentFloor; i < numFloors; i++){
-                    if(floorList.get(i) || ele.pressedButtonsUp.get(i)){
+                    if(floorListUp.get(i) || ele.pressedButtons.get(i)){
                         moveElevator2(elevatorIndex, i, dir);
                         return;
                     }
                 }
                 for(int i  = currentFloor; i >= 0 ; i--){
-                    if(floorList.get(i) || ele.pressedButtonsUp.get(i)){
+                    if( floorListDown.get(i) || ele.pressedButtons.get(i)){
                         moveElevator2(elevatorIndex, i, Direction.ELEVATOR_DIRECTION_DOWN);
                         return;
                     }
@@ -107,15 +111,15 @@ public class ElevatorAlgorithm implements MqttCallback {
                 return;
             }
             else if (dir == Direction.ELEVATOR_DIRECTION_DOWN) {
-                ele.pressedButtonsDown.set(currentFloor, false);
+                floorListDown.set(currentFloor, false);
                 for(int i  = currentFloor; i >= 0 ; i--){
-                    if(floorList.get(i) || ele.pressedButtonsDown.get(i)){
+                    if(floorListDown.get(i) || ele.pressedButtons.get(i)){
                         moveElevator2(elevatorIndex, i, dir);
                         return;
                     }
                 }
                 for(int i  = currentFloor; i < numFloors; i++){
-                    if(floorList.get(i) || ele.pressedButtonsDown.get(i)){
+                    if(floorListUp.get(i) || ele.pressedButtons.get(i)){
                         moveElevator2(elevatorIndex, i, Direction.ELEVATOR_DIRECTION_UP);
                         return;
                     }
@@ -126,9 +130,10 @@ public class ElevatorAlgorithm implements MqttCallback {
             else if (dir == Direction.ELEVATOR_DIRECTION_UNCOMMITTED) {
                 int minDistance = Integer.MAX_VALUE;
                 int closestTrueIndex = currentFloor;;
-
-                for (int i = 0; i < ele.pressedButtonsUp.size(); i++) {
-                    if (ele.pressedButtonsUp.get(i) || floorList.get(i)) {
+                floorListUp.set(currentFloor, false);
+                floorListDown.set(currentFloor, false);
+                for (int i = 0; i < ele.pressedButtons.size(); i++) {
+                    if (ele.pressedButtons.get(i) || floorListUp.get(i)) {
                         int distance = Math.abs(currentFloor - i);
                         if (distance < minDistance) {
                             minDistance = distance;
@@ -136,8 +141,8 @@ public class ElevatorAlgorithm implements MqttCallback {
                         }
                     }
                 }
-                for (int i = 0; i < ele.pressedButtonsDown.size(); i++) {
-                    if (ele.pressedButtonsDown.get(i) || floorList.get(i)) {
+                for (int i = 0; i < ele.pressedButtons.size(); i++) {
+                    if (ele.pressedButtons.get(i) || floorListDown.get(i)) {
                         int distance = Math.abs(currentFloor - i);
                         if (distance < minDistance) {
                             minDistance = distance;
@@ -339,6 +344,8 @@ public class ElevatorAlgorithm implements MqttCallback {
                 switch (topicParts[1]) {
                     case "position":
                         //System.out.println("Position of Elev:" +  index + " is " + value);
+                        float tmp = value/Integer.parseInt(this.properties.getProperty("floorHeight")) ;
+                        System.out.println("currentFloor:" + tmp + " heightval:" + value);
 
                         elevator.setCurrentFloor(value/Integer.parseInt(this.properties.getProperty("floorHeight")));
                         // TODO: Additional logic for elevator position
@@ -392,7 +399,7 @@ public class ElevatorAlgorithm implements MqttCallback {
                         break;
                     case "button":
                         //System.out.println("Button pressed in Elev:" +  index + " Floor: " + value);
-                        elevatorList.get(index).pressedButtonsUp.set(value, true);
+                        elevatorList.get(index).pressedButtons.set(value, true);
                         break;
                     default:
                         //System.out.println("-----------------------------------------------------------" + topic + message);
@@ -405,7 +412,7 @@ public class ElevatorAlgorithm implements MqttCallback {
                 switch (topicParts[1]) {
                     case "buttonup":
                         System.out.println("ButtonUP floor:" +  index);
-                        floorList.set(index, true);
+                        floorListUp.set(index, true);
                         //TODO Put this shit into a update function that just updates elevator controls
             // //                int elevatorToGo = this.calculateElevator(index, value);
             // //                System.out.println("elevator/control/" + elevatorToGo + "\n" + "setTarget:" + index);
@@ -414,7 +421,7 @@ public class ElevatorAlgorithm implements MqttCallback {
                         break;
                     case "buttondown":
                         System.out.println("ButtonDOWN floor:" +  index);
-                        floorList.set(index, true);
+                        floorListDown.set(index, true);
                     default:
                         // Handle unknown topicParts[1]
                         break;
