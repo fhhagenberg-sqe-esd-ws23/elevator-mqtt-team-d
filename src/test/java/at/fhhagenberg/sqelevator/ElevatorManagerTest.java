@@ -4,11 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -155,5 +154,64 @@ public class ElevatorManagerTest {
         int targetFloor = elevatorManager.getTarget(elevatorNumber);
         assertNotNull(targetFloor); // Ensure target floor is not null
     }
+    @Test
+    public void testMove() {
+        int elevatorNumber = 1;
+        Elevator.Direction dir = Elevator.Direction.ELEVATOR_DIRECTION_UP;
+        elevatorManager.elevators.get(1).setDirection(dir);
+        assertSame(
+                elevatorManager.elevators.get(elevatorNumber).getDirection(),
+                dir);
+    }
+    @Test
+    public void testDoorStatus(){
+        int elevatorNumber = 1;
+        elevatorManager.elevators.get(elevatorNumber).setDoorOpen(true);
+        elevatorManager.elevators.get(elevatorNumber).setDoorOpen(false);
+        assertTrue(
+                Objects.equals(elevatorManager.elevators.get(elevatorNumber).getDoorStatus().toString(), Elevator.DoorStatus.ELEVATOR_DOORS_CLOSED.toString()));
+    }
+    @Test
+    public void testSetTargetFloor() {
+        elevatorManager.elevators.get(1).setTargetFloor(5);
+        assertEquals(5, elevatorManager.elevators.get(1).getTargetFloor());
+    }
 
+    @Test
+    public void testAddServiceFloor() {
+        elevatorManager.elevators.get(1).addServiceFloor(3);
+        assertTrue(elevatorManager.elevators.get(1).getServiceFloors().contains(3));
+    }
+
+    @Test
+    public void testRemoveServiceFloor() {
+        elevatorManager.elevators.get(1).addServiceFloor(3);
+        elevatorManager.elevators.get(1).removeServiceFloor(3);
+        assertFalse(elevatorManager.elevators.get(1).getServiceFloors().contains(3));
+    }
+
+    @Test
+    public void testGetElevatorNumber() {
+        elevatorManager.elevators.get(1).setElevatorNumber(1);
+        assertEquals(1, elevatorManager.elevators.get(1).getElevatorNumber());
+    }
+
+
+    @Test
+    public void testSetElevatorNumber() {
+        elevatorManager.elevators.get(1).setElevatorNumber(2);
+        assertEquals(2, elevatorManager.elevators.get(1).getElevatorNumber());
+    }
+
+    @Test
+    public void testGetCurrentFloor() {
+        elevatorManager.elevators.get(1).setCurrentFloor(4);
+        assertEquals(4, elevatorManager.elevators.get(1).getCurrentFloor());
+    }
+
+    @Test
+    public void testSetCurrentFloor() {
+        elevatorManager.elevators.get(1).setCurrentFloor(7);
+        assertEquals(7, elevatorManager.elevators.get(1).getCurrentFloor());
+    }
 }
