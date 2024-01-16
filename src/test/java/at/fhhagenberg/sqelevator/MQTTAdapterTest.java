@@ -118,7 +118,7 @@ public class MQTTAdapterTest {
             throw assertionError.get();
         }
         //mqttTestClient.teardown();
-        tearDown();
+        //tearDown();
         System.out.println("End of Test!");
 
     }
@@ -127,6 +127,7 @@ public class MQTTAdapterTest {
     public void testSetTarget() throws MqttException, InterruptedException {
         //TODO check if default values are valid
         int currTarget;
+        elevatorManager.reset();
         try {
             currTarget = elevatorManager.getTarget(0);
             assertEquals(0, currTarget);
