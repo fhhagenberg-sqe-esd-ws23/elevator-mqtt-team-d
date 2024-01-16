@@ -171,7 +171,7 @@ import java.util.TimerTask;
 
         @Override
         public void disconnected(MqttDisconnectResponse mqttDisconnectResponse) {
-            System.out.println("Disconnected");
+            System.out.println("Adpater Disconnected");
         }
 
         @Override
@@ -212,7 +212,7 @@ import java.util.TimerTask;
             switch (command) {
                 case "setTarget":
                     this.elevator.setTarget(elevatorID, value);
-                    //System.out.println("Target:    " +  value + " | elev: " + elevatorID);
+                    System.out.println("Target:    " +  value + " | elev: " + elevatorID);
                     break;
                 case "setServicesFloors":
                     // Assuming the second part is the floor number

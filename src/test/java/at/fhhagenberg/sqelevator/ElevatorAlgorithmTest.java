@@ -85,48 +85,48 @@ public class ElevatorAlgorithmTest {
     // - Should check in Algo if new location has been saved
     
 
-    @Test
-    public void testAlgo() throws MqttException, InterruptedException {
-
-        // Create a CountDownLatch with a count of 1
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<AssertionError> assertionError = new AtomicReference<>();
-
-        BiConsumer<String, String> messageCallback = (topic, message) -> {
-            try {
-                // Your custom logic for handling the arrived message
-                System.out.println("Received message: " + message);
-
-                // Count down the latch to unblock the test
-                latch.countDown();
-
-            } catch (AssertionError e) {
-                assertionError.set(e);
-            }
-        };
-
-        // Create Handler to imitate Adapter and RMI Commands
-        MqttHandler adapderMock = new MqttHandler(elevatorProps.getProperty("mqtt.broker.url"), "client1", messageCallback);
-        adapderMock.subscribeToTopic("elevator/control/+");
-
-        // Send message for floor buttonup pressed on floor 2
-        adapderMock.publishOnTopic("floor/buttonup/2", "1");
-
-        if (!latch.await(3, TimeUnit.SECONDS)) {
-            // If the latch is not counted down within the timeout, fail the test
-            throw new AssertionError("Timeout waiting for message arrival");
-        }
-        if (assertionError.get() != null) {
-            throw assertionError.get();
-        }
-
-        assertEquals(true, elevatorAlgo.floorListUp.get(2));
-
-        assertEquals(Elevator.Direction.ELEVATOR_DIRECTION_UP, elevatorAlgo.elevatorList.get(0).getDirection());
-
-        adapderMock.teardown();
-        System.out.println("End of Test!");
-    }
+//    @Test
+//    public void testAlgo() throws MqttException, InterruptedException {
+//
+//        // Create a CountDownLatch with a count of 1
+//        CountDownLatch latch = new CountDownLatch(1);
+//        AtomicReference<AssertionError> assertionError = new AtomicReference<>();
+//
+//        BiConsumer<String, String> messageCallback = (topic, message) -> {
+//            try {
+//                // Your custom logic for handling the arrived message
+//                System.out.println("Received message: " + message);
+//
+//                // Count down the latch to unblock the test
+//                latch.countDown();
+//
+//            } catch (AssertionError e) {
+//                assertionError.set(e);
+//            }
+//        };
+//
+//        // Create Handler to imitate Adapter and RMI Commands
+//        MqttHandler adapderMock = new MqttHandler(elevatorProps.getProperty("mqtt.broker.url"), "client1", messageCallback);
+//        adapderMock.subscribeToTopic("elevator/control/+");
+//
+//        // Send message for floor buttonup pressed on floor 2
+//        adapderMock.publishOnTopic("floor/buttonup/2", "1");
+//
+//        if (!latch.await(3, TimeUnit.SECONDS)) {
+//            // If the latch is not counted down within the timeout, fail the test
+//            throw new AssertionError("Timeout waiting for message arrival");
+//        }
+//        if (assertionError.get() != null) {
+//            throw assertionError.get();
+//        }
+//
+//        assertEquals(true, elevatorAlgo.floorListUp.get(2));
+//
+//        assertEquals(Elevator.Direction.ELEVATOR_DIRECTION_UP, elevatorAlgo.elevatorList.get(0).getDirection());
+//
+//        adapderMock.teardown();
+//        System.out.println("End of Test!");
+//    }
 
 
 

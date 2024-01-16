@@ -208,7 +208,7 @@ public class ElevatorAlgorithm implements MqttCallback {
 
         @Override
         public void disconnected(MqttDisconnectResponse mqttDisconnectResponse) {
-            System.out.println("Disconnected");
+            System.out.println("Algo Disconnected");
         }
 
         @Override

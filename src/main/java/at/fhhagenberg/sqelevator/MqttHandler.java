@@ -1,9 +1,6 @@
 package at.fhhagenberg.sqelevator;
 
-import org.eclipse.paho.mqttv5.client.IMqttToken;
-import org.eclipse.paho.mqttv5.client.MqttCallback;
-import org.eclipse.paho.mqttv5.client.MqttClient;
-import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
+import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
@@ -28,8 +25,14 @@ public class MqttHandler implements MqttCallback {
         this.messageArrivedCallback = messageArrivedCallback;
         try {
             client = new MqttClient(this.serverURI, this.clientID);
-            if(!client.isConnected())
-                client.connect();
+            MqttConnectionOptions connOpts = new MqttConnectionOptions();
+            if(!client.isConnected()) {
+                connOpts.setCleanStart(false);
+                connOpts.setSessionExpiryInterval(null);
+                connOpts.setAutomaticReconnect(true);
+                connOpts.setKeepAliveInterval(60);
+                client.connect(connOpts);
+            }
             client.setCallback(this);
 
         } catch (MqttException e) {
@@ -76,7 +79,7 @@ public class MqttHandler implements MqttCallback {
 
     @Override
     public void disconnected(MqttDisconnectResponse mqttDisconnectResponse) {
-        System.out.println("Disconnected");
+        System.out.println("Handler Disconnected");
     }
 
     @Override
