@@ -1,13 +1,11 @@
 package at.fhhagenberg.sqelevator;
 
-import org.eclipse.paho.mqttv5.client.IMqttToken;
-import org.eclipse.paho.mqttv5.client.MqttCallback;
-import org.eclipse.paho.mqttv5.client.MqttClient;
-import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
+import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 
 import sqelevator.IElevator;
 
@@ -32,8 +30,14 @@ import java.util.TimerTask;
                 String brokerUrl = this.properties.getProperty("mqtt.broker.url");
                 String clientId = "ElevatorMQTTAdapter"; // You can customize this
                 this.mqttClient = new MqttClient(brokerUrl, clientId);
-                if(!mqttClient.isConnected())
+                MqttConnectionOptions connOpts = new MqttConnectionOptions();
+                if(!mqttClient.isConnected()) {
+                    connOpts.setCleanStart(false);
+                    connOpts.setSessionExpiryInterval(null);
+                    connOpts.setAutomaticReconnect(true);
+                    connOpts.setKeepAliveInterval(60);
                     mqttClient.connect();
+                }
                 mqttClient.setCallback(this);
 
                 // Subscribe to the topic for setting elevator parameters
