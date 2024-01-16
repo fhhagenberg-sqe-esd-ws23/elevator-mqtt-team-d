@@ -38,7 +38,7 @@ import java.util.TimerTask;
                     connOpts.setSessionExpiryInterval(null);
                     connOpts.setAutomaticReconnect(true);
                     connOpts.setKeepAliveInterval(60);
-                    mqttClient.connect();
+                    mqttClient.connect(connOpts);
                 }
                 mqttClient.setCallback(this);
 

@@ -211,7 +211,7 @@ public class MQTTAdapterTest {
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
-        algoMock.teardown();
+        //algoMock.teardown();
         //tearDown();
         System.out.println("End of Test!");
     }

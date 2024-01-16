@@ -38,7 +38,7 @@ public class ElevatorAlgorithm implements MqttCallback {
                     connOpts.setSessionExpiryInterval(null);
                     connOpts.setAutomaticReconnect(true);
                     connOpts.setKeepAliveInterval(60);
-                    mqttClient.connect();
+                    mqttClient.connect(connOpts);
                 }
                 mqttClient.setCallback(this);
 
