@@ -328,11 +328,6 @@ public class ElevatorAlgorithm implements MqttCallback {
         private void teardown()
         {
             timer.cancel();
-            try {
-                mqttClient.disconnect();
-            } catch (MqttException e) {
-                throw new RuntimeException(e);
-            }
         }
 
     }

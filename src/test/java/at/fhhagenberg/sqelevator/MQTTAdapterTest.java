@@ -19,6 +19,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -95,8 +97,9 @@ public class MQTTAdapterTest {
 
                 assertEquals(message, "5");
                 // Count down the latch to unblock the test
-                latch.countDown();
-
+                if(message.equals("5")){
+                    latch.countDown();
+                }
             } catch (AssertionError e) {
                 assertionError.set(e);
             }
@@ -114,8 +117,8 @@ public class MQTTAdapterTest {
         if (assertionError.get() != null) {
             throw assertionError.get();
         }
-        mqttTestClient.teardown();
-        tearDown();
+        //mqttTestClient.teardown();
+        //tearDown();
         System.out.println("End of Test!");
 
     }
@@ -137,6 +140,8 @@ public class MQTTAdapterTest {
 
         // Create a CountDownLatch with a count of 1
         CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch latch2 = new CountDownLatch(1);
+
         AtomicReference<AssertionError> assertionError = new AtomicReference<>();
 
         BiConsumer<String, String> messageCallback = (topic, message) -> {
@@ -144,10 +149,14 @@ public class MQTTAdapterTest {
                 // Your custom logic for handling the arrived message
                 System.out.println("Received message: " + message);
                 // Count down the latch to unblock the test
-                if(topic.equals("elevator/target/2") && message.equals("3") ||
-                        topic.equals("elevator/target/0") && message.equals("3"))
-                {
+                List<String> topicList = new ArrayList<>();
+                topicList.add("elevator/target/2");
+                topicList.add("elevator/target/0");
+                if(topic.equals(topicList.get(0)) && message.equals("3")) {
                     latch.countDown();
+                }
+                else if (topic.equals(topicList.get(1)) && message.equals("3")) {
+                    latch2.countDown();
                 }
             } catch (AssertionError e) {
                 assertionError.set(e);
@@ -171,6 +180,7 @@ public class MQTTAdapterTest {
         }
 
         try {
+            System.out.println("Assertions one");
             currTarget = elevatorManager.getTarget(0);
             assertEquals(5, currTarget);
             currTarget = elevatorManager.getTarget(1);
@@ -185,12 +195,13 @@ public class MQTTAdapterTest {
         algoMock.publishOnTopic("elevator/control/2", "setTarget:5");
         algoMock.publishOnTopic("elevator/control/1", "setTarget:4");
         algoMock.publishOnTopic("elevator/control/0", "setTarget:3");
-        Thread.sleep(200);
-        if (!latch.await(3, TimeUnit.SECONDS)) {
+        //Thread.sleep(800);
+        if (!latch2.await(3, TimeUnit.SECONDS)) {
             // If the latch is not counted down within the timeout, fail the test
             throw new AssertionError("Timeout waiting for message arrival");
         }
         try {
+            System.out.println("Assertions two");
             currTarget = elevatorManager.getTarget(2);
             assertEquals(5, currTarget);
             currTarget = elevatorManager.getTarget(1);
@@ -201,13 +212,13 @@ public class MQTTAdapterTest {
             throw new RuntimeException(e);
         }
         algoMock.teardown();
-        tearDown();
+        //tearDown();
         System.out.println("End of Test!");
     }
 
     @AfterAll
     public static void tearDown() throws MqttException {
         elevatorManager.reset();
-        elevatorMQTTAdapter.teardown();
+        //elevatorMQTTAdapter.teardown();
     }
 }
