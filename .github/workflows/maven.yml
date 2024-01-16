@@ -10,14 +10,25 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
+      - development
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
+      - development
+    
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
+
+    services:
+      hivemq:
+        image: hivemq/hivemq4:latest
+        ports:
+          - 1883:1883
 
     steps:
     - uses: actions/checkout@v3
