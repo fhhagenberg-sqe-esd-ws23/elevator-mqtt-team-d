@@ -19,6 +19,12 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    services:
+      hivemq:
+        image: hivemq/hivemq4:latest
+        ports:
+          - 1883:1883
+
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 17
