@@ -325,7 +325,7 @@ public class ElevatorAlgorithm implements MqttCallback {
             System.out.println("Adapter Auth Packet Arrived");
         }
 
-        private void teardown()
+        public void teardown()
         {
             timer.cancel();
         }

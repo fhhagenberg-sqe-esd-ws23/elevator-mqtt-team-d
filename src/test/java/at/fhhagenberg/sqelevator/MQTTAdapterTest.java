@@ -118,7 +118,6 @@ public class MQTTAdapterTest {
             throw assertionError.get();
         }
         mqttTestClient.teardown();
-        tearDown();
         System.out.println("End of Test!");
 
     }
@@ -213,7 +212,6 @@ public class MQTTAdapterTest {
             throw new RuntimeException(e);
         }
         algoMock.teardown();
-        tearDown();
         System.out.println("End of Test!");
     }
 

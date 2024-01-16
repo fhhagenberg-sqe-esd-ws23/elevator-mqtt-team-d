@@ -249,10 +249,5 @@ import java.util.TimerTask;
         public void teardown()
         {
             timer.cancel();
-            try {
-                mqttClient.disconnect();
-            } catch (MqttException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
