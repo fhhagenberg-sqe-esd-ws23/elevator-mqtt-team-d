@@ -1,16 +1,25 @@
 package at.fhhagenberg.sqelevator;
 
+import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.plugins.MockMaker;
 import sqelevator.IElevator;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Properties;
+import static org.mockito.Mockito.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,7 +37,8 @@ public class ElevatorAlgorithmTest {
     private static ElevatorAlgorithm elevatorAlgo;
     private static Properties elevatorProps;
     private static ElevatorManager elevatorManager;
-    @BeforeAll
+
+/*    @BeforeAll
     public static void setUp() {
         try {
 
@@ -41,7 +51,7 @@ public class ElevatorAlgorithmTest {
 
 
             ElevatorManager elevatorManager = new ElevatorManager();
-            /*********** Prepare  ***************/
+            *//*********** Prepare  ***************//*
             // Adding floors to the data model
             int numFloors = Integer.parseInt(elevatorProps.getProperty("numFloors"));
             for (int i = 0; i < numFloors; i++) {
@@ -55,7 +65,23 @@ public class ElevatorAlgorithmTest {
             // Setting floor height
             elevatorManager.setFloorHeight(4);// Example: Each floor is 4 units high
 
-            //IElevator stub_server = (IElevator) UnicastRemoteObject.exportObject(elevatorManager, 0);
+            // Create Mock
+            IElevator mockElevator = mock(IElevator.class);
+            // Set Mock reaction
+            when(mockElevator.getElevatorButton(3,10)).thenReturn(true);
+            // Create an instance of the class under test, injecting the mock DataService
+            ElevatorManager mockManager = new ElevatorManager();
+
+            // Call the method being tested
+            boolean result = mockManager.getElevatorButton(3,10);
+            System.out.println(result);
+
+            // Verify that the method was called with the expected parameters
+            //            IElevator stub_server = (IElevator) UnicastRemoteObject.exportObject(elevatorManager, 0);
+//Registry registry = LocateRegistry.createRegistry(1099);
+//registry.rebind("ElevatorManager", stub_server);
+
+//            IElevator stub_server = (IElevator) UnicastRemoteObject.exportObject(elevatorManager, 0);
             //Registry registry = LocateRegistry.createRegistry(1099);
             //registry.rebind("ElevatorManager", stub_server);
 
@@ -70,11 +96,58 @@ public class ElevatorAlgorithmTest {
             e.printStackTrace();
         }
     }
+    */
+    @Test
+    public void emptyTest(){
+        System.out.println("Empty Algo Test");
+    }
+
+    @Test
+    public void testAlgoInit() throws IOException, MqttException {
+
+        String rootPath = System.getProperty("user.dir");
+        String appConfigPath = rootPath + "/properties/IElevator.properties";
+
+        Properties elevatorProps = new Properties();
+        elevatorProps.load(new FileInputStream(appConfigPath));
+
+        // This method tests the algorithm via mqtt
+        String brokerUrl = elevatorProps.getProperty("mqtt.broker.url");
+        String clientId = "ElevatorMQTTAdapter"; // You can customize this
+        MqttClient mqttClient = new MqttClient(brokerUrl, clientId);
+        // Mock Adapter
+//        ElevatorMQTTAdapter mockAdapter = mock(ElevatorMQTTAdapter.class);
+/*
+        // Mock Elevator
+        Elevator mockElevator = mock(Elevator.class);
+        when(mockElevator.getCurrentFloor().then;
+
+        // Set up Elevator Manager with mocked Elevators
+        ElevatorManager mockManager = new ElevatorManager();
+        mockManager.addExternElevator(10, mockElevator);
+
+        // Check if all target floors are set to 0
+        for(int i = 0; i < 10; i++){
+            int result = mockManager.getTarget(i);
+            assertEquals(12,result);
+        }
+*/
+
+    }
+
+/*
+    @AfterAll
+    public static void tearDown() throws MqttException {
+        elevatorAlgo.teardown();
+    }
+*/
+
+}
 
     //TODO Integration test:
-    // - InitAdapter
-    // - InitAlgo
-    // - InitRMI
+    // - InitAdapter -
+    // - InitAlgo -
+    // - InitRMI -
     // - Manipulate ElevatorManager State setTarget:3
     // - Manipulated ElevatorManager State gets Polled and Published by Adapter via MQTT
     // - Algo Reacts and publishes command for elevator to go (setTarget:3) ... and set it in ElevatorManager
@@ -83,99 +156,3 @@ public class ElevatorAlgorithmTest {
     // - publish new elev location
     // - Should check in Algo if new location has been saved
 
-
-    // @Test
-    // public void testFloorButton() throws MqttException, InterruptedException {
-    //     // Start handeling inside Test otherwise we f*** up the Dataset behind mqttAdapter
-    //     // bc Algo sends floor2 button pressed...
-    //     elevatorAlgo.handle();
-    //     // Create a CountDownLatch with a count of 1
-    //     CountDownLatch latch = new CountDownLatch(1);
-    //     AtomicReference<AssertionError> assertionError = new AtomicReference<>();
-
-    //     BiConsumer<String, String> messageCallback = (topic, message) -> {
-    //         try {
-    //             // Your custom logic for handling the arrived message
-    //             System.out.println("Received message: " + message);
-
-    //             // Count down the latch to unblock the test
-    //             latch.countDown();
-
-    //         } catch (AssertionError e) {
-    //             assertionError.set(e);
-    //         }
-    //     };
-
-    //     // Create Handler to imitate Adapter and RMI Commands
-    //     MqttHandler adapderMock = new MqttHandler(elevatorProps.getProperty("mqtt.broker.url"), "client1", messageCallback);
-    //     adapderMock.subscribeToTopic("elevator/control/+");
-
-    //     // Send message for floor buttonup pressed on floor 2
-    //     //adapderMock.publishOnTopic("floor/buttonup/2", "1");
-
-    //     if (!latch.await(3, TimeUnit.SECONDS)) {
-    //         // If the latch is not counted down within the timeout, fail the test
-    //         throw new AssertionError("Timeout waiting for message arrival");
-    //     }
-    //     if (assertionError.get() != null) {
-    //         throw assertionError.get();
-    //     }
-
-    //     assertEquals(true, elevatorAlgo.floorListUp.get(2));
-
-    //     assertEquals(Elevator.Direction.ELEVATOR_DIRECTION_UP, elevatorAlgo.elevatorList.get(0).getDirection());
-
-    //     adapderMock.teardown();
-    //     System.out.println("End of Test!");
-    // }
-
-//    @Test
-//    public void testFloorButto2n() throws MqttException, InterruptedException {
-//        // Start handeling inside Test otherwise we f*** up the Dataset behind mqttAdapter
-//        // bc Algo sends floor2 button pressed...
-//        elevatorAlgo.handle();
-//        // Create a CountDownLatch with a count of 1
-//        CountDownLatch latch = new CountDownLatch(1);
-//        AtomicReference<AssertionError> assertionError = new AtomicReference<>();
-//
-//        BiConsumer<String, String> messageCallback = (topic, message) -> {
-//            try {
-//                // Your custom logic for handling the arrived message
-//                System.out.println("Received message: " + message);
-//
-//                // Count down the latch to unblock the test
-//                latch.countDown();
-//
-//            } catch (AssertionError e) {
-//                assertionError.set(e);
-//            }
-//        };
-//
-//        // Create Handler to imitate Adapter and RMI Commands
-//        MqttHandler adapderMock = new MqttHandler(elevatorProps.getProperty("mqtt.broker.url"), "client1", messageCallback);
-//        adapderMock.subscribeToTopic("elevator/control/+");
-//
-//        // Send message for floor buttonup pressed on floor 2
-//        //adapderMock.publishOnTopic("floor/buttonup/2", "1");
-//
-//        if (!latch.await(3, TimeUnit.SECONDS)) {
-//            // If the latch is not counted down within the timeout, fail the test
-//            throw new AssertionError("Timeout waiting for message arrival");
-//        }
-//        if (assertionError.get() != null) {
-//            throw assertionError.get();
-//        }
-//
-//        assertEquals(true, elevatorAlgo.floorListUp.get(2));
-//
-//        assertEquals(Elevator.Direction.ELEVATOR_DIRECTION_UP, elevatorAlgo.elevatorList.get(0).getDirection());
-//
-//        adapderMock.teardown();
-//        System.out.println("End of Test!");
-//    }
-
-    @AfterAll
-    public static void tearDown() throws MqttException {
-        elevatorAlgo.teardown();
-    }
-}
