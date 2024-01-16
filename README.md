@@ -17,10 +17,11 @@ Make sure the settings of the simulator (e.g. number of floors and number of ele
 
 ```sh
 main.jar
-```
-### 4. ???
+### 4. Wait for elevator...```
 
-### 5. Profit
+### 5. ???
+
+### 6. Profit
 
 ## Properties File
 Config Properties:
