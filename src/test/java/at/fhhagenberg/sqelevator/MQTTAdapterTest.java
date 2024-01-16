@@ -208,6 +208,6 @@ public class MQTTAdapterTest {
     @AfterAll
     public static void tearDown() throws MqttException {
         elevatorManager.reset();
-
+        elevatorMQTTAdapter.teardown();
     }
 }

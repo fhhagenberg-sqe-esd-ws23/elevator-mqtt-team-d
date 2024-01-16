@@ -246,7 +246,7 @@ import java.util.TimerTask;
             System.out.println("Adapter Auth Packet Arrived");
         }
 
-        private void teardown()
+        public void teardown()
         {
             timer.cancel();
             try {
