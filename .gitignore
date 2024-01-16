@@ -169,3 +169,18 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+
+#.lc files
+*/*.lck
+
+#/index files
+index-files/*
+legal/*
+resources/*
+target/*
+at/
+script-dir/
+*.js
+*.html
+*.css
+element-list
