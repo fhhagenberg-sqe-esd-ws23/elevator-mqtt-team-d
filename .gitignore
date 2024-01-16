@@ -179,3 +179,8 @@ legal/*
 resources/*
 target/*
 at/
+script-dir/
+*.js
+*.html
+*.css
+element-list
