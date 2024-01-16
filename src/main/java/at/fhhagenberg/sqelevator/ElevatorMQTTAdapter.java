@@ -63,7 +63,7 @@ import java.util.TimerTask;
                 // Assuming elevatorNumber is defined in your class
                 for (int elevatorNumber = 0; elevatorNumber < Integer.parseInt(properties.getProperty("numElevators")); elevatorNumber++)
                 {
-                   System.out.println("Door Status: " + this.elevator.getElevatorDoorStatus(elevatorNumber) + " elevator nr:" + elevatorNumber); 
+                   //System.out.println("Door Status: " + this.elevator.getElevatorDoorStatus(elevatorNumber) + " elevator nr:" + elevatorNumber);
                    // Publish elevator's position
                    int elevatorPosition = this.elevator.getElevatorPosition(elevatorNumber);
                    publishMessage("elevator/position/" + elevatorNumber, String.valueOf(elevatorPosition));
