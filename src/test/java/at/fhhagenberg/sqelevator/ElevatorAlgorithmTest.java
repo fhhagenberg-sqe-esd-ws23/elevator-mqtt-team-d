@@ -1,10 +1,13 @@
 package at.fhhagenberg.sqelevator;
 
 import org.eclipse.paho.mqttv5.client.MqttClient;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.eclipse.paho.mqttv5.common.MqttSubscription;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -18,6 +21,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.Array;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import static org.mockito.Mockito.*;
 import java.util.concurrent.CountDownLatch;
@@ -38,110 +44,50 @@ public class ElevatorAlgorithmTest {
     private static Properties elevatorProps;
     private static ElevatorManager elevatorManager;
 
-/*    @BeforeAll
-    public static void setUp() {
-        try {
-
-            // Get properties
-            String rootPath = System.getProperty("user.dir");
-            String appConfigPath = rootPath + "/properties/IElevator.properties";
-
-            elevatorProps = new Properties();
-            elevatorProps.load(new FileInputStream(appConfigPath));
-
-
-            ElevatorManager elevatorManager = new ElevatorManager();
-            *//*********** Prepare  ***************//*
-            // Adding floors to the data model
-            int numFloors = Integer.parseInt(elevatorProps.getProperty("numFloors"));
-            for (int i = 0; i < numFloors; i++) {
-                elevatorManager.floors.add(new Floor(i + 1)); // Floor numbering starts from 1
-            }
-
-            // Adding elevators to the data model
-            int numElevators = Integer.parseInt(elevatorProps.getProperty("numElevators"));
-            elevatorManager.addElevators(numElevators); // Adds 3 elevators
-
-            // Setting floor height
-            elevatorManager.setFloorHeight(4);// Example: Each floor is 4 units high
-
-            // Create Mock
-            IElevator mockElevator = mock(IElevator.class);
-            // Set Mock reaction
-            when(mockElevator.getElevatorButton(3,10)).thenReturn(true);
-            // Create an instance of the class under test, injecting the mock DataService
-            ElevatorManager mockManager = new ElevatorManager();
-
-            // Call the method being tested
-            boolean result = mockManager.getElevatorButton(3,10);
-            System.out.println(result);
-
-            // Verify that the method was called with the expected parameters
-            //            IElevator stub_server = (IElevator) UnicastRemoteObject.exportObject(elevatorManager, 0);
-//Registry registry = LocateRegistry.createRegistry(1099);
-//registry.rebind("ElevatorManager", stub_server);
-
-//            IElevator stub_server = (IElevator) UnicastRemoteObject.exportObject(elevatorManager, 0);
-            //Registry registry = LocateRegistry.createRegistry(1099);
-            //registry.rebind("ElevatorManager", stub_server);
-
-            System.out.println("ElevatorManager server is running...");
-
-            //elevatorMQTTAdapter = new ElevatorMQTTAdapter(elevatorProps);
-            //elevatorMQTTAdapter.handle();
-
-            elevatorAlgo = new ElevatorAlgorithm(elevatorProps);
-
-        } catch (Exception e) {
-            e.printStackTrace();
+    public MqttHandler mqttClient;
+    ElevatorAlgorithm algo;
+    @BeforeEach
+    @Test
+    public void setUp() throws IOException, MqttException {
+        // Get props
+        String rootPath = System.getProperty("user.dir");
+        String appConfigPath = rootPath + "/properties/IElevator.properties";
+        elevatorProps = new Properties();
+        elevatorProps.load(new FileInputStream(appConfigPath));
+        // Create Algo
+        algo = new ElevatorAlgorithm(elevatorProps);
+        // Create mqtt client
+        String brokerUrl = elevatorProps.getProperty("mqtt.broker.url");
+        String clientId = "ElevatorMQTTAdapter"; // You can customize this
+        mqttClient = new MqttHandler(brokerUrl,clientId,(topic,msg)->{
+            System.out.println("Topic: "+ topic.toString());
+            System.out.println("Message: "+ msg.toString());
+        });
+        if(!mqttClient.client.isConnected()){
+            throw new IOException("MQTT Not connected");
+        }else{
+            System.out.println("MQTT connected");
         }
+        // Subscribe to correct channels
+/*
+        MqttSubscription[] subscriptions = new MqttSubscription[3];
+        subscriptions[0] = new MqttSubscription("elevator/control/+");
+        subscriptions[1] = new MqttSubscription("hello2");
+        subscriptions[2] = new MqttSubscription("hello3");
+*/      mqttClient.subscribeToTopic("floor/buttonup/3");
+        mqttClient.subscribeToTopic("elevator/control/+");
+        mqttClient.subscribeToTopic("elevator/control/0");
     }
-    */
     @Test
     public void emptyTest(){
         System.out.println("Empty Algo Test");
     }
-
     @Test
-    public void testAlgoInit() throws IOException, MqttException {
-
-        String rootPath = System.getProperty("user.dir");
-        String appConfigPath = rootPath + "/properties/IElevator.properties";
-
-        Properties elevatorProps = new Properties();
-        elevatorProps.load(new FileInputStream(appConfigPath));
-
-        // This method tests the algorithm via mqtt
-        String brokerUrl = elevatorProps.getProperty("mqtt.broker.url");
-        String clientId = "ElevatorMQTTAdapter"; // You can customize this
-        MqttClient mqttClient = new MqttClient(brokerUrl, clientId);
-        // Mock Adapter
-//        ElevatorMQTTAdapter mockAdapter = mock(ElevatorMQTTAdapter.class);
-/*
-        // Mock Elevator
-        Elevator mockElevator = mock(Elevator.class);
-        when(mockElevator.getCurrentFloor().then;
-
-        // Set up Elevator Manager with mocked Elevators
-        ElevatorManager mockManager = new ElevatorManager();
-        mockManager.addExternElevator(10, mockElevator);
-
-        // Check if all target floors are set to 0
-        for(int i = 0; i < 10; i++){
-            int result = mockManager.getTarget(i);
-            assertEquals(12,result);
-        }
-*/
-
+    public void testMoveElevator() throws MqttException {
+        mqttClient.publishOnTopic("floor/buttonup/3","target=4");
+        algo.handle();
+//        mqttClient.publish("floor/buttonup/3","Hello".getBytes(),1,true);
     }
-
-/*
-    @AfterAll
-    public static void tearDown() throws MqttException {
-        elevatorAlgo.teardown();
-    }
-*/
-
 }
 
     //TODO Integration test:
