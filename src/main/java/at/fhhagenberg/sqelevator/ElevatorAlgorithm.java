@@ -7,6 +7,7 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 
 import at.fhhagenberg.sqelevator.Elevator.DoorStatus;
 import at.fhhagenberg.sqelevator.Elevator.Direction;
@@ -20,6 +21,7 @@ public class ElevatorAlgorithm implements MqttCallback {
     public static List<Elevator> elevatorList;
     public static List<Boolean> floorListUp;
     public static List<Boolean> floorListDown;
+    private static Timer timer;
 
     private static int MAXWEIGHT = 500;
 
@@ -30,8 +32,14 @@ public class ElevatorAlgorithm implements MqttCallback {
                 String brokerUrl = this.properties.getProperty("mqtt.broker.url");
                 String clientId = "ElevatorAlgorithm"; // You can customize this
                 this.mqttClient = new MqttClient(brokerUrl, clientId);
-                if(!mqttClient.isConnected())
+                MqttConnectionOptions connOpts = new MqttConnectionOptions();
+                if(!mqttClient.isConnected()) {
+                    connOpts.setCleanStart(false);
+                    connOpts.setSessionExpiryInterval(null);
+                    connOpts.setAutomaticReconnect(true);
+                    connOpts.setKeepAliveInterval(60);
                     mqttClient.connect();
+                }
                 mqttClient.setCallback(this);
 
                 // Subscribe to the topic for setting elevator parameters
@@ -63,8 +71,10 @@ public class ElevatorAlgorithm implements MqttCallback {
 
         private void moveElevator(int elevatorIndex, int floorIdx, Direction dir){
             this.publishMessage("elevator/control/" + elevatorIndex,"setCommittedDirection:" + dir.ordinal());
+            elevatorList.get(elevatorIndex).setDirection(dir);
             if (dir != Direction.ELEVATOR_DIRECTION_UNCOMMITTED) {
                 this.publishMessage("elevator/control/" + elevatorIndex,"setTarget:" + floorIdx);
+                elevatorList.get(elevatorIndex).setTargetFloor(floorIdx);
             }
         }
 
@@ -158,7 +168,7 @@ public class ElevatorAlgorithm implements MqttCallback {
 
             // Schedule polling task at fixed intervals
             long pollingInterval = Long.parseLong(this.properties.getProperty("polling.interval"));
-            Timer timer = new Timer();
+            timer = new Timer();
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
@@ -313,6 +323,16 @@ public class ElevatorAlgorithm implements MqttCallback {
         @Override
         public void authPacketArrived(int i, MqttProperties mqttProperties) {
             System.out.println("Adapter Auth Packet Arrived");
+        }
+
+        private void teardown()
+        {
+            timer.cancel();
+            try {
+                mqttClient.disconnect();
+            } catch (MqttException e) {
+                throw new RuntimeException(e);
+            }
         }
 
     }

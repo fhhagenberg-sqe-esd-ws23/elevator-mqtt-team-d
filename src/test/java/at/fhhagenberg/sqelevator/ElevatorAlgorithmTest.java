@@ -124,6 +124,7 @@ public class ElevatorAlgorithmTest {
 
         assertEquals(Elevator.Direction.ELEVATOR_DIRECTION_UP, elevatorAlgo.elevatorList.get(0).getDirection());
 
+        adapderMock.teardown();
         System.out.println("End of Test!");
     }
 

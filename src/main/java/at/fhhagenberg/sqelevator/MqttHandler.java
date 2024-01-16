@@ -110,4 +110,13 @@ public class MqttHandler implements MqttCallback {
     public void authPacketArrived(int i, MqttProperties mqttProperties) {
         System.out.println("Auth Packet Arrived");
     }
+
+    public void teardown()
+    {
+        try {
+            client.disconnect();
+        } catch (MqttException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

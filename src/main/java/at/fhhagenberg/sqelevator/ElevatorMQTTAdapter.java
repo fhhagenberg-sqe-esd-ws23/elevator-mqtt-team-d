@@ -1,17 +1,16 @@
 package at.fhhagenberg.sqelevator;
 
-import org.eclipse.paho.mqttv5.client.IMqttToken;
-import org.eclipse.paho.mqttv5.client.MqttCallback;
-import org.eclipse.paho.mqttv5.client.MqttClient;
-import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
+import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 
 import sqelevator.IElevator;
 
 import java.rmi.Naming;
+import java.sql.Time;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -20,6 +19,7 @@ import java.util.TimerTask;
         private IElevator elevator;
         private MqttClient mqttClient;
         private Properties properties;
+        private static Timer timer;
 
         public ElevatorMQTTAdapter(Properties config) {
             this.properties = config;
@@ -32,8 +32,14 @@ import java.util.TimerTask;
                 String brokerUrl = this.properties.getProperty("mqtt.broker.url");
                 String clientId = "ElevatorMQTTAdapter"; // You can customize this
                 this.mqttClient = new MqttClient(brokerUrl, clientId);
-                if(!mqttClient.isConnected())
+                MqttConnectionOptions connOpts = new MqttConnectionOptions();
+                if(!mqttClient.isConnected()) {
+                    connOpts.setCleanStart(false);
+                    connOpts.setSessionExpiryInterval(null);
+                    connOpts.setAutomaticReconnect(true);
+                    connOpts.setKeepAliveInterval(60);
                     mqttClient.connect();
+                }
                 mqttClient.setCallback(this);
 
                 // Subscribe to the topic for setting elevator parameters
@@ -148,7 +154,7 @@ import java.util.TimerTask;
 
             // Schedule polling task at fixed intervals
             long pollingInterval = Long.parseLong(this.properties.getProperty("polling.interval"));
-            Timer timer = new Timer();
+            timer = new Timer();
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
@@ -240,4 +246,13 @@ import java.util.TimerTask;
             System.out.println("Adapter Auth Packet Arrived");
         }
 
+        public void teardown()
+        {
+            timer.cancel();
+            try {
+                mqttClient.disconnect();
+            } catch (MqttException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
