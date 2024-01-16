@@ -172,3 +172,10 @@ fabric.properties
 
 #.lc files
 */*.lck
+
+#/index files
+index-files/*
+legal/*
+resources/*
+target/*
+at/*
