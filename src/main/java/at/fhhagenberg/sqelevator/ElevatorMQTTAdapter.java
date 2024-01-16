@@ -10,6 +10,7 @@ import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import sqelevator.IElevator;
 
 import java.rmi.Naming;
+import java.sql.Time;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -18,6 +19,7 @@ import java.util.TimerTask;
         private IElevator elevator;
         private MqttClient mqttClient;
         private Properties properties;
+        private static Timer timer;
 
         public ElevatorMQTTAdapter(Properties config) {
             this.properties = config;
@@ -152,7 +154,7 @@ import java.util.TimerTask;
 
             // Schedule polling task at fixed intervals
             long pollingInterval = Long.parseLong(this.properties.getProperty("polling.interval"));
-            Timer timer = new Timer();
+            timer = new Timer();
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
@@ -244,4 +246,13 @@ import java.util.TimerTask;
             System.out.println("Adapter Auth Packet Arrived");
         }
 
+        private void teardown()
+        {
+            timer.cancel();
+            try {
+                mqttClient.disconnect();
+            } catch (MqttException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }

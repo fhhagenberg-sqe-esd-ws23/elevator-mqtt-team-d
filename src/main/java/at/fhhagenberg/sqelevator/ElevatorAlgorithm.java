@@ -21,6 +21,7 @@ public class ElevatorAlgorithm implements MqttCallback {
     public static List<Elevator> elevatorList;
     public static List<Boolean> floorListUp;
     public static List<Boolean> floorListDown;
+    private static Timer timer;
 
     private static int MAXWEIGHT = 500;
 
@@ -167,7 +168,7 @@ public class ElevatorAlgorithm implements MqttCallback {
 
             // Schedule polling task at fixed intervals
             long pollingInterval = Long.parseLong(this.properties.getProperty("polling.interval"));
-            Timer timer = new Timer();
+            timer = new Timer();
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
@@ -322,6 +323,16 @@ public class ElevatorAlgorithm implements MqttCallback {
         @Override
         public void authPacketArrived(int i, MqttProperties mqttProperties) {
             System.out.println("Adapter Auth Packet Arrived");
+        }
+
+        private void teardown()
+        {
+            timer.cancel();
+            try {
+                mqttClient.disconnect();
+            } catch (MqttException e) {
+                throw new RuntimeException(e);
+            }
         }
 
     }

@@ -114,8 +114,10 @@ public class MQTTAdapterTest {
         if (assertionError.get() != null) {
             throw assertionError.get();
         }
-        System.out.println("End of Test!");
+        mqttTestClient.teardown();
         tearDown();
+        System.out.println("End of Test!");
+
     }
 
     @Test
@@ -198,11 +200,14 @@ public class MQTTAdapterTest {
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
+        algoMock.teardown();
         tearDown();
+        System.out.println("End of Test!");
     }
 
     @AfterAll
     public static void tearDown() throws MqttException {
         elevatorManager.reset();
+
     }
 }
