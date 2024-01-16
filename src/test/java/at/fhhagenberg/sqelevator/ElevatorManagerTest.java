@@ -185,6 +185,7 @@ public class ElevatorManagerTest {
         assertEquals(1, elevatorManager.elevators.get(1).getElevatorNumber());
     }
 
+
     @Test
     public void testSetElevatorNumber() {
         elevatorManager.elevators.get(1).setElevatorNumber(2);
