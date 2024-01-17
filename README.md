@@ -4,7 +4,7 @@
 ### Requirements
 - docker
 - Elevator Sim
-  
+
 ### 1. Run hivemq
 
 ```sh
@@ -12,17 +12,12 @@ docker run -p 8080:8080 -p 1883:1883 hivemq/hivemq4
 ```
 ### 2. Run Simulator
 Make sure the settings of the simulator (e.g. number of floors and number of elevator) matches those of the properties/IElevator.properties.
+Also click on Start Simulation before running the program.
 
 ### 3. Run ElevatorAlgo
-
-```sh
-java -jar mqtt-elevator-d-0.0.1-SNAPSHOT.jar 
-```
-### 4. Wait for elevator...
-
-### 5. ???
-
-### 6. Profit
+Run Main file in inteliJ.
+Creating the .jar file couldn't be done because we accidentally deleted some important folder structures.
+Alternatively any test file can also be run, while both mqtt (docker) and the simulator are running.
 
 ## Properties File
 Config Properties:
