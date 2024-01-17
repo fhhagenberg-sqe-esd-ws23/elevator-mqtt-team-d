@@ -112,12 +112,12 @@ import java.util.TimerTask;
                 }
                 for(int i = 0; i < Integer.parseInt(properties.getProperty("numFloors")); i++)
                 {
+                    if(this.elevator.getFloorButtonDown(i)){
+                        publishMessage("floor/buttondown/" + i, "1");
+                    }
                     if(this.elevator.getFloorButtonUp(i))
                     {
                         publishMessage("floor/buttonup/" + i, "1");
-                    }
-                    if(this.elevator.getFloorButtonDown(i)){
-                        publishMessage("floor/buttondown/" + i, "1");
                     }
                 }
 

@@ -1,4 +1,14 @@
 # SQE-Elevator-Project Team D
+## Installation 
+
+1. Download the latest release in the Releases section of Repository.
+2. Unpack the .jar file from the zip
+3. Download properties file from repo
+3. Before launching the Elevator Controller, ensure that the Elevator Simulator is already started and running.
+4. Open a command console or terminal window.
+5. Navigate to the folder where you extracted the .jar file.
+6. Run the .jar file by executing the command: java -jar .\mqtt-elevator-d-0.1.1.jar
+7. If you want to stop the Elevator Controller press Ctrl + C.
 
 ## Setup and Run:
 ### Requirements
@@ -14,9 +24,9 @@ docker run -p 8080:8080 -p 1883:1883 hivemq/hivemq4
 Make sure the settings of the simulator (e.g. number of floors and number of elevator) matches those of the properties/IElevator.properties.
 
 ### 3. Run ElevatorAlgo
-
+(Properties file has to be in properties/)
 ```sh
-java -jar mqtt-elevator-d-0.0.1-SNAPSHOT.jar 
+java -jar mqtt-elevator-d-0.1.1.jar 
 ```
 ### 4. Wait for elevator...
 
