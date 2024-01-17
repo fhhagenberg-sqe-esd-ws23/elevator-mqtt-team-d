@@ -145,9 +145,10 @@ public class ElevatorAlgorithm implements MqttCallback {
                         int distance = Math.abs(currentFloor - i);
                         if (distance < minDistance) {
                             minDistance = distance;
-                            if( i < closestTrueIndex)
+                            if( i > closestTrueIndex)
                             {
                                 closestTrueIndex = i;
+                                //System.out.println("Closest Idx: " + closestTrueIndex);
                             }
                         }
                     }
@@ -295,12 +296,27 @@ public class ElevatorAlgorithm implements MqttCallback {
 
                 switch (topicParts[1]) {
                     case "buttonup":
+                        if (value == 1){
+                            floorListUp.set(index, true);
+                        }
+                        else
+                        {
+                            floorListUp.set(index, false);
+                        }
                         //System.out.println("ButtonUP floor:" +  index);
-                        floorListUp.set(index, true);
+
+
                         break;
                     case "buttondown":
+                        if (value == 1){
+                            floorListDown.set(index, true);
+                        }
+                        else
+                        {
+                            floorListDown.set(index, false);
+                        }
                         //System.out.println("ButtonDOWN floor:" +  index);
-                        floorListDown.set(index, true);
+
                     default:
                         // Handle unknown topicParts[1]
                         break;
@@ -325,6 +341,17 @@ public class ElevatorAlgorithm implements MqttCallback {
             System.out.println("Adapter Auth Packet Arrived");
         }
 
+        public void reset()
+        {
+            int numOfFloors = Integer.parseInt(this.properties.getProperty("numFloors"));
+            elevatorList.clear();
+            floorListUp  = new ArrayList<>(Collections.nCopies(numOfFloors, false));
+            floorListDown  = new ArrayList<>(Collections.nCopies(numOfFloors, false));
+
+            for(int i = 0; i <  Integer.parseInt(this.properties.getProperty("numElevators")); i++){
+                elevatorList.add(new Elevator(i, MAXWEIGHT,numOfFloors));
+            }
+        }
         public void teardown()
         {
             timer.cancel();
