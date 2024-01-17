@@ -345,12 +345,13 @@ public class ElevatorAlgorithm implements MqttCallback {
         {
             int numOfFloors = Integer.parseInt(this.properties.getProperty("numFloors"));
             elevatorList.clear();
-            floorListUp  = new ArrayList<>(Collections.nCopies(numOfFloors, false));
-            floorListDown  = new ArrayList<>(Collections.nCopies(numOfFloors, false));
-
             for(int i = 0; i <  Integer.parseInt(this.properties.getProperty("numElevators")); i++){
                 elevatorList.add(new Elevator(i, MAXWEIGHT,numOfFloors));
             }
+            floorListUp  = new ArrayList<>(Collections.nCopies(numOfFloors, false));
+            floorListDown  = new ArrayList<>(Collections.nCopies(numOfFloors, false));
+
+
         }
         public void teardown()
         {

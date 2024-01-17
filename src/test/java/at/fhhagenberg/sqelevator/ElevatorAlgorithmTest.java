@@ -178,12 +178,12 @@ public class ElevatorAlgorithmTest {
 
     @Test
     public void testSecondElevator() throws MqttException, InterruptedException {
-
+        elevatorAlgo.handle();
         assertEquals(Elevator.Direction.ELEVATOR_DIRECTION_UNCOMMITTED, elevatorAlgo.elevatorList.get(0).getDirection());
         assertEquals(Elevator.Direction.ELEVATOR_DIRECTION_UNCOMMITTED, elevatorAlgo.elevatorList.get(1).getDirection());
         assertEquals(Elevator.Direction.ELEVATOR_DIRECTION_UNCOMMITTED, elevatorAlgo.elevatorList.get(2).getDirection());
 
-        elevatorAlgo.handle();
+
         // Create a CountDownLatch with a count of 1
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<AssertionError> assertionError = new AtomicReference<>();
