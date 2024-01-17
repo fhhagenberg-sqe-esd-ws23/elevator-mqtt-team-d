@@ -16,7 +16,7 @@ Make sure the settings of the simulator (e.g. number of floors and number of ele
 ### 3. Run ElevatorAlgo
 
 ```sh
-main.jar
+java -jar mqtt-elevator-d-0.0.1-SNAPSHOT.jar 
 ```
 ### 4. Wait for elevator...
 
