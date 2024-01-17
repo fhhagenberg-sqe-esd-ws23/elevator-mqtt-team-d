@@ -2,8 +2,7 @@
 ## Installation 
 
 1. Download the latest release in the Releases section of Repository.
-2. Unpack the .jar file from the zip
-3. Download properties file from repo
+2. Unpack the .jar and .properties files from the zip
 3. Before launching the Elevator Controller, ensure that the Elevator Simulator is already started and running.
 4. Open a command console or terminal window.
 5. Navigate to the folder where you extracted the .jar file.
